@@ -29,10 +29,6 @@
   - **Scene**: Represents the content. For instance, to add an image: `currentImage = imageScene->addPixmap(image)`. This returns a pointer to a `QGraphicsPixmapItem`, which is Qt's way of handling images.
   - **View**: Defines the presentation of the Scene. Adjust the view to the image using `imageView->setSceneRect(image.rect())` and zoom in with `imageView->scale(1.2, 1.2)`.
 
-Certainly! The **Slot-Signal-Action System** is at the heart of the Qt framework's event-driven programming paradigm. Here's an expanded explanation of it:
-
----
-
 - **Slot-Signal-Action System in Qt**
 
     Qt applications are event-driven. It runs in a loop, waiting for the user to perform some action like a mouse click. And when these events happen, they need a way to notify the application's logic so it can respond appropriately.
