@@ -3,6 +3,8 @@
 **Author**: Tony Fu  
 **Date**: August 6, 2023
 
+**Reference**: [Qt 5 and OpenCV 4 Computer Vision Projects](https://github.com/PacktPublishing/Qt-5-and-OpenCV-4-Computer-Vision-Projects/tree/master) by Zhuo Qingliang
+
 ![Image Viewer Screenshot](image_viewer.png)
 
 ## Setting Up Development Environment

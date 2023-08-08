@@ -73,9 +73,7 @@
     class SamplePlugin : public QObject, public MyPluginInterface {
         Q_OBJECT
         Q_PLUGIN_METADATA(IID MY_PLUGIN_INTERFACE_IID)
-        Q_INTERF
-
-ACES(MyPluginInterface)
+        Q_INTERFACES(MyPluginInterface)
 
     public:
         QString name() const override {
@@ -93,19 +91,27 @@ ACES(MyPluginInterface)
     #include <QPluginLoader>
 
     void MainWindow::loadPlugins() {
+        // Retrieve the list of all plugin files in the plugins directory.
         QDir pluginsDir(QDir::currentPath() + "/plugins");
         QStringList nameFilters;
         nameFilters << "*.so" << "*.dylib" << "*.dll";
         QFileInfoList plugins = pluginsDir.entryInfoList(
             nameFilters, QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
+        
+        // Iterate over each plugin file.
         foreach(QFileInfo plugin, plugins) {
             QPluginLoader pluginLoader(plugin.absoluteFilePath(), this);
             MyPluginInterface *plugin_ptr = dynamic_cast<MyPluginInterface*>(pluginLoader.instance());
             if(plugin_ptr) {
+                // Create a new action for the plugin and add it to the edit menu and toolbar.
                 QAction *action = new QAction(plugin_ptr->name(), this);
                 editMenu->addAction(action);
                 editToolBar->addAction(action);
+
+                // Store the plugin pointer in a map for later reference.
                 editPlugins[plugin_ptr->name()] = plugin_ptr;
+
+                // Connect the action's triggered signal to the pluginPerform slot
                 connect(action, &QAction::triggered, this, &MainWindow::pluginPerform);
             } else {
                 qDebug() << "Failed to load plugin: " << plugin.absoluteFilePath();
@@ -123,6 +129,7 @@ ACES(MyPluginInterface)
             return;
         }
 
+        // Fetch the corresponding plugin using the action's text 
         QAction *active_action = qobject_cast<QAction*>(sender());
         MyPluginInterface *plugin_ptr = editPlugins[active_action->text()];
         if(!plugin_ptr) {
@@ -130,6 +137,7 @@ ACES(MyPluginInterface)
             return;
         }
 
+        // Convert the image format to RGB888 for processing.
         QPixmap pixmap = currentImage->pixmap();
         QImage image = pixmap.toImage().convertToFormat(QImage::Format_RGB888);
         cv::Mat mat = cv::Mat(
@@ -139,15 +147,21 @@ ACES(MyPluginInterface)
             image.bits(),
             image.bytesPerLine());
 
+        // Apply the selected plugin's editing method.
         plugin_ptr->edit(mat, mat);
 
+        // Convert the edited cv::Mat back to QPixmap.
         QImage image_edited(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
         pixmap = QPixmap::fromImage(image_edited);
+
+        // Show the image
         imageScene->clear();
         imageView->resetTransform();
         currentImage = imageScene->addPixmap(pixmap);
         imageScene->update();
         imageView->setSceneRect(pixmap.rect());
+
+        // Update the status label
         QString status = QString("(Edited Image) %1x%2")
             .arg(pixmap.width()).arg(pixmap.height());
         mainStatusLabel->setText(status);
