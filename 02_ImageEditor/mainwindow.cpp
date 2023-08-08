@@ -328,7 +328,10 @@ void MainWindow::blurImage()
 void MainWindow::loadPlugins()
 {
     // Retrieve the list of all plugin files in the plugins directory.
-    QDir pluginsDir(QDir::currentPath() + "/plugins");
+    // QDir pluginsDir(QDir::currentPath() + "/plugins");
+    QString appDirPath = QCoreApplication::applicationDirPath();
+    QDir pluginsDir(appDirPath + "/../../../plugins");
+
     QStringList nameFilters;
     nameFilters << "*.so"
                 << "*.dylib"

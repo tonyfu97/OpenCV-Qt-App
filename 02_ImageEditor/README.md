@@ -5,6 +5,37 @@
 
 **Reference**: [Qt 5 and OpenCV 4 Computer Vision Projects](https://github.com/PacktPublishing/Qt-5-and-OpenCV-4-Computer-Vision-Projects/tree/master) by Zhuo Qingliang
 
+## Results
+
+- **Original Image**:
+
+![original](images/lighthouse.png)
+
+- **Blurring** (Gaussian Blur):
+
+![blur](images/lighthouse_blur.png)
+
+- **Eroding**:
+
+![erode](images/lighthouse_erode.png)
+
+- **Sharpening** (Difference of Gaussian):
+
+![sharpen](images/lighthouse_sharpen.png)
+
+- **Cartoon Effect** (Downsampling + Bilateral Filtering + Upsampling + Edge Detection):
+
+![cartoon](images/lighthouse_cartoon.png)
+
+- **Rotation**:
+
+![rotate](images/lighthouse_rotate.png)
+
+- **Affine Transformation**:
+
+![affine](images/lighthouse_affine.png)
+
+
 ## Setting Up the Development Environment
 
 - **VS Code Integration**: 
@@ -92,7 +123,9 @@
 
     void MainWindow::loadPlugins() {
         // Retrieve the list of all plugin files in the plugins directory.
-        QDir pluginsDir(QDir::currentPath() + "/plugins");
+        QString appDirPath = QCoreApplication::applicationDirPath();
+        QDir pluginsDir(appDirPath + "/../../../plugins");
+
         QStringList nameFilters;
         nameFilters << "*.so" << "*.dylib" << "*.dll";
         QFileInfoList plugins = pluginsDir.entryInfoList(
@@ -168,3 +201,4 @@
     }
     ```
     Here, `pluginPerform()` should be a private slot.
+
