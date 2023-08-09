@@ -63,8 +63,6 @@
     setCentralWidget(widget);
     ```
 
-You provided a set of instructions and code related to video processing using OpenCV and Qt. Here are some modifications and suggestions to improve the clarity and correctness of your text:
-
 ### 3. Using the Camera:
 - First, determine which camera you want to use: `QList<QCameraInfo> cameras = QCameraInfo::availableCameras()`.
 
