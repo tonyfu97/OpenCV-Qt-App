@@ -4,13 +4,14 @@
 
 TEMPLATE = app
 TARGET = 03_MotionDetection
+QT += core gui multimedia network concurrent
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 INCLUDEPATH += .
 
 # OpenCV
 unix: mac {
     INCLUDEPATH += /opt/homebrew/include/opencv4
-    LIBS += -L/opt/homebrew/opt/opencv/lib -lopencv_core -lopencv_imgproc
+    LIBS += -L/opt/homebrew/opt/opencv/lib -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lopencv_video -lopencv_videoio
 }
 
 # You can make your code fail to compile if you use deprecated APIs.
@@ -21,6 +22,6 @@ unix: mac {
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
-HEADERS += mainwindow.h
-SOURCES += main.cpp mainwindow.cpp
+HEADERS += mainwindow.h capture_thread.h utilities.h
+SOURCES += main.cpp mainwindow.cpp capture_thread.cpp utilities.cpp
 

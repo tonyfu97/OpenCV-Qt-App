@@ -2,8 +2,9 @@
 
 **Author**: Tony Fu  
 **Date**: August 6, 2023
+**Device**: 16 inch Macbook Pro, Late 2021 (M1 Pro)
 
-**Reference**: [Qt 5 and OpenCV 4 Computer Vision Projects](https://github.com/PacktPublishing/Qt-5-and-OpenCV-4-Computer-Vision-Projects/tree/master) by Zhuo Qingliang
+**Reference**: Chapter 1 of [*Qt 5 and OpenCV 4 Computer Vision Projects*](https://github.com/PacktPublishing/Qt-5-and-OpenCV-4-Computer-Vision-Projects/tree/master) by Zhuo Qingliang
 
 ![Image Viewer Screenshot](image_viewer.png)
 
