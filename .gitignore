@@ -33,3 +33,6 @@
 
 # Qt
 .qmake.stash
+
+# Data
+04_FaceDetection/data/*
