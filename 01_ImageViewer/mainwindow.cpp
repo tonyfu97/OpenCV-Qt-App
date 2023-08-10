@@ -103,7 +103,7 @@ void MainWindow::showImage(QString path)
     imageScene->clear();
 
     // Reset the view.
-    imageView->resetMatrix();
+    imageView->resetTransform();
 
     // Load the image from the given path.
     QPixmap image(path);

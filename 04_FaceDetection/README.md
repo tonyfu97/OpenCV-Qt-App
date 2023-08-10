@@ -15,7 +15,7 @@
 ### 1. Issues Encountered & Solutions:
 
 1. `resetMatrix` is deprecated:
-  Solution: Replace `imageView->resetMatrix();` with `imageView->resetTransform();` This deprecation warning has actually showed up in the previous chapters, but I ignored it at the time.
+  Solution: Replace `imageView->resetTransform();` with `imageView->resetTransform();` This deprecation warning has actually showed up in the previous chapters, but I ignored it at the time.
 
 2. The app crashed after closing, giving the error 
 ```

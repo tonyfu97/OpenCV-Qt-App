@@ -114,7 +114,7 @@ void MainWindow::showImage(QString path)
     imageScene->clear();
 
     // Reset the view.
-    imageView->resetMatrix();
+    imageView->resetTransform();
 
     // Load the image from the given path.
     QPixmap image(path);
@@ -313,7 +313,7 @@ void MainWindow::blurImage()
 
     // Clear the scene and reset the view
     imageScene->clear();
-    imageView->resetMatrix();
+    imageView->resetTransform();
     currentImage = imageScene->addPixmap(pixmap);
     imageScene->update();
     imageView->setSceneRect(pixmap.rect());
@@ -429,7 +429,7 @@ void MainWindow::pluginPerform()
 
     // Clear the current image and add the edited image to the scene.
     imageScene->clear();
-    imageView->resetMatrix();
+    imageView->resetTransform();
     currentImage = imageScene->addPixmap(pixmap);
 
     // Update the scene and set the display rectangle.

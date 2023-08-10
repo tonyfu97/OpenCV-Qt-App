@@ -18,8 +18,8 @@ QString Utilities::getDataPath()
 {
     QString user_movie_path = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation)[0];
     QDir movie_dir(user_movie_path);
-    movie_dir.mkpath("Gazer");
-    return movie_dir.absoluteFilePath("Gazer");
+    movie_dir.mkpath("OpenCV-Qt-App-03-MotionDetection");
+    return movie_dir.absoluteFilePath("OpenCV-Qt-App-03-MotionDetection");
 }
 
 QString Utilities::newSavedVideoName()

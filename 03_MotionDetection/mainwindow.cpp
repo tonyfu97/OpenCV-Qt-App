@@ -66,7 +66,7 @@ void MainWindow::initUI()
     mainStatusBar = statusBar();
     mainStatusLabel = new QLabel(mainStatusBar);
     mainStatusBar->addPermanentWidget(mainStatusLabel);
-    mainStatusLabel->setText("Gazer is Ready");
+    mainStatusLabel->setText("Motion Detection is Ready");
 
     createActions();
     populateSavedList();
@@ -151,7 +151,7 @@ void MainWindow::updateFrame(cv::Mat *mat)
     QPixmap image = QPixmap::fromImage(frame);
 
     imageScene->clear();
-    imageView->resetMatrix();
+    imageView->resetTransform();
     imageScene->addPixmap(image);
     imageScene->update();
     imageView->setSceneRect(image.rect());
