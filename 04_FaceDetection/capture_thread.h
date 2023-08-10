@@ -4,8 +4,8 @@
 #include <QThread>
 #include <QMutex>
 #include "opencv2/opencv.hpp"
-#include "opencv2/videoio.hpp"
-#include "opencv2/video/background_segm.hpp"
+#include "opencv2/objdetect.hpp"
+#include "opencv2/face/facemark.hpp"
 
 using namespace std;
 
@@ -34,6 +34,7 @@ signals:
 
 private:
     void takePhoto(cv::Mat &frame);
+    void detectFaces(cv::Mat &frame);
 
 private:
     bool running;
@@ -46,4 +47,7 @@ private:
 
     // take photos
     bool taking_photo;
+
+    // face detection
+    cv::CascadeClassifier *classifier;
 };

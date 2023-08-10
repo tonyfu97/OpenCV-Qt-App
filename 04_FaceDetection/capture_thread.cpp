@@ -1,3 +1,5 @@
+#include <QApplication>
+#include <QImage>
 #include <QTime>
 #include <QDebug>
 
@@ -16,7 +18,8 @@ CaptureThread::CaptureThread(QString videoPath, QMutex *lock) : running(false), 
     taking_photo = false;
 }
 
-CaptureThread::~CaptureThread() {
+CaptureThread::~CaptureThread()
+{
 }
 
 // Main loop for capturing and processing video frames
@@ -37,6 +40,9 @@ void CaptureThread::run()
     frame_width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
     frame_height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
 
+    // Face detection
+    classifier = new cv::CascadeClassifier(OPENCV_DATA_DIR "haarcascades/haarcascade_frontalface_default.xml");
+
     while (running)
     {
         cap >> tmp_frame;
@@ -48,6 +54,8 @@ void CaptureThread::run()
         {
             takePhoto(tmp_frame);
         }
+
+        detectFaces(tmp_frame);
 
         // Convert frame color from BGR to RGB
         cvtColor(tmp_frame, tmp_frame, cv::COLOR_BGR2RGB);
@@ -63,6 +71,8 @@ void CaptureThread::run()
 
     // Cleanup
     cap.release();
+    delete classifier;
+    classifier = nullptr;
     running = false;
 }
 
@@ -79,4 +89,20 @@ void CaptureThread::takePhoto(cv::Mat &frame)
     cv::imwrite(photo_path.toStdString(), frame);
     emit photoTaken(photo_name);
     taking_photo = false;
+}
+
+void CaptureThread::detectFaces(cv::Mat &frame)
+{
+    vector<cv::Rect> faces;
+    cv::Mat gray_frame;
+    cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
+    classifier->detectMultiScale(gray_frame, faces, 1.3, 5);
+
+    cv::Scalar color = cv::Scalar(0, 0, 255); // red
+
+    // draw the circumscribe rectangles
+    for (size_t i = 0; i < faces.size(); i++)
+    {
+        cv::rectangle(frame, faces[i], color, 1);
+    }
 }
