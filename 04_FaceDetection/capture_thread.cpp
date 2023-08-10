@@ -2,6 +2,9 @@
 #include <QImage>
 #include <QTime>
 #include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <stdexcept>
 
 #include "utilities.h"
 #include "capture_thread.h"
@@ -42,6 +45,13 @@ void CaptureThread::run()
 
     // Face detection
     classifier = new cv::CascadeClassifier(OPENCV_DATA_DIR "haarcascades/haarcascade_frontalface_default.xml");
+    mark_detector = cv::face::createFacemarkLBF();
+    QString model_path = QApplication::instance()->applicationDirPath() + "/../../../models/lbfmodel.yaml";
+    if (!QFile::exists(model_path))
+    {
+        throw std::runtime_error("Model file not found: " + model_path.toStdString() + ". Please run the command `curl -O https://raw.githubusercontent.com/kurnianggoro/GSOC2017/master/data/lbfmodel.yaml` and move the downloaded file to the `models` folder.");
+    }
+    mark_detector->loadModel(model_path.toStdString());
 
     while (running)
     {
@@ -104,5 +114,18 @@ void CaptureThread::detectFaces(cv::Mat &frame)
     for (size_t i = 0; i < faces.size(); i++)
     {
         cv::rectangle(frame, faces[i], color, 1);
+    }
+
+    vector<vector<cv::Point2f>> shapes;
+    if (mark_detector->fit(frame, faces, shapes))
+    {
+        // Draw facial land marks
+        for (unsigned long i = 0; i < faces.size(); i++)
+        {
+            for (unsigned long k = 0; k < shapes[i].size(); k++)
+            {
+                cv::circle(frame, shapes[i][k], 2, color, cv::FILLED);
+            }
+        }
     }
 }

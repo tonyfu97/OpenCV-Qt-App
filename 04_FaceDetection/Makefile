@@ -952,6 +952,7 @@ moc_mainwindow.cpp: mainwindow.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qstring.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QThread \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qthread.h \
+		/opt/homebrew/include/opencv4/opencv2/face/facemark.hpp \
 		moc_predefs.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc
 	/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc $(DEFINES) --include /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/04_FaceDetection/moc_predefs.h -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/04_FaceDetection -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/04_FaceDetection -I/opt/homebrew/include/opencv4 -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtMultimedia.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtNetwork.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/opt/homebrew/Cellar/qt@5/5.15.10/lib mainwindow.h -o moc_mainwindow.cpp
@@ -1072,6 +1073,7 @@ moc_capture_thread.cpp: capture_thread.h \
 		/opt/homebrew/include/opencv4/opencv2/video.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video/tracking.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp \
+		/opt/homebrew/include/opencv4/opencv2/face/facemark.hpp \
 		moc_predefs.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc
 	/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc $(DEFINES) --include /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/04_FaceDetection/moc_predefs.h -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/04_FaceDetection -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/04_FaceDetection -I/opt/homebrew/include/opencv4 -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtMultimedia.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtNetwork.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/opt/homebrew/Cellar/qt@5/5.15.10/lib capture_thread.h -o moc_capture_thread.cpp
@@ -1236,7 +1238,8 @@ main.o: main.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Heade
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QString \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qstring.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QThread \
-		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qthread.h
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qthread.h \
+		/opt/homebrew/include/opencv4/opencv2/face/facemark.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 mainwindow.o: mainwindow.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QApplication \
@@ -1401,10 +1404,15 @@ mainwindow.o: mainwindow.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.fra
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qstring.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QThread \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qthread.h \
+		/opt/homebrew/include/opencv4/opencv2/face/facemark.hpp \
 		utilities.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp
 
-capture_thread.o: capture_thread.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QTime \
+capture_thread.o: capture_thread.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QApplication \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qapplication.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QImage \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qimage.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QTime \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qdatetime.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QDebug \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qdebug.h \
@@ -1524,7 +1532,8 @@ capture_thread.o: capture_thread.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCor
 		/opt/homebrew/include/opencv4/opencv2/stitching/detail/blenders.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video/tracking.hpp \
-		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp
+		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp \
+		/opt/homebrew/include/opencv4/opencv2/face/facemark.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o capture_thread.o capture_thread.cpp
 
 utilities.o: utilities.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QObject \

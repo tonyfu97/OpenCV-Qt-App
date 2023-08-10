@@ -50,4 +50,5 @@ private:
 
     // face detection
     cv::CascadeClassifier *classifier;
+    cv::Ptr<cv::face::Facemark> mark_detector;
 };
