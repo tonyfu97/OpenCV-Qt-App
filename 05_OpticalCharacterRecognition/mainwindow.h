@@ -32,6 +32,11 @@ private:
     void createActions();
     void setupShortcuts();
     void showImage(QString);
+    void showImage(cv::Mat);
+
+    void decode(const cv::Mat &scores, const cv::Mat &geometry, float scoreThresh,
+                std::vector<cv::RotatedRect> &detections, std::vector<float> &confidences);
+    cv::Mat detectTextAreas(QImage &image, std::vector<cv::Rect> &);
 
 private slots:
     void openImage();
@@ -57,9 +62,11 @@ private:
     QAction *saveTextAsAction;
     QAction *exitAction;
     QAction *ocrAction;
+    QCheckBox *detectAreaCheckBox;
 
     QString currentImagePath;
     QGraphicsPixmapItem *currentImage;
 
     tesseract::TessBaseAPI *tesseractAPI;
+    cv::dnn::Net net;
 };

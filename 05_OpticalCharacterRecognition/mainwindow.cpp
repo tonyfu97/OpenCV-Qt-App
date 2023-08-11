@@ -14,6 +14,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), currentImage(null
 
 MainWindow::~MainWindow()
 {
+    if (tesseractAPI != nullptr)
+    {
+        tesseractAPI->End();
+        delete tesseractAPI;
+    }
 }
 
 void MainWindow::initUI()
@@ -66,6 +71,8 @@ void MainWindow::createActions()
     fileToolBar->addAction(openAction);
     ocrAction = new QAction("OCR", this);
     fileToolBar->addAction(ocrAction);
+    detectAreaCheckBox = new QCheckBox("Detect Text Areas", this);
+    fileToolBar->addWidget(detectAreaCheckBox);
 
     // connect the signals and slots
     connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
@@ -113,6 +120,23 @@ void MainWindow::showImage(QString path)
     QString status = QString("%1, %2x%3, %4 Bytes").arg(path).arg(image.width()).arg(image.height()).arg(QFile(path).size());
     mainStatusLabel->setText(status);
     currentImagePath = path;
+}
+
+void MainWindow::showImage(cv::Mat mat)
+{
+    QImage image(
+        mat.data,
+        mat.cols,
+        mat.rows,
+        mat.step,
+        QImage::Format_RGB888);
+
+    QPixmap pixmap = QPixmap::fromImage(image);
+    imageScene->clear();
+    imageView->resetMatrix();
+    currentImage = imageScene->addPixmap(pixmap);
+    imageScene->update();
+    imageView->setSceneRect(pixmap.rect());
 }
 
 void MainWindow::saveImageAs()
@@ -205,6 +229,27 @@ void MainWindow::extractText()
     tesseractAPI->SetImage(image.bits(), image.width(), image.height(),
                            3, image.bytesPerLine());
 
+    if (detectAreaCheckBox->checkState() == Qt::Checked)
+    {
+        std::vector<cv::Rect> areas;
+        cv::Mat newImage = detectTextAreas(image, areas);
+        showImage(newImage);
+        editor->setPlainText("");
+        for (cv::Rect &rect : areas)
+        {
+            tesseractAPI->SetRectangle(rect.x, rect.y, rect.width, rect.height);
+            char *outText = tesseractAPI->GetUTF8Text();
+            editor->setPlainText(editor->toPlainText() + outText);
+            delete[] outText;
+        }
+    }
+    else
+    {
+        char *outText = tesseractAPI->GetUTF8Text();
+        editor->setPlainText(outText);
+        delete[] outText;
+    }
+
     // Get the recognized text from the image
     char *outText = tesseractAPI->GetUTF8Text();
 
@@ -217,4 +262,140 @@ void MainWindow::extractText()
     // Restore the saved locale
     setlocale(LC_ALL, old_ctype);
     free(old_ctype);
+}
+
+cv::Mat MainWindow::detectTextAreas(QImage &image, std::vector<cv::Rect> &areas)
+{
+    // Define threshold values and input dimensions for the DNN model
+    float confThreshold = 0.5;
+    float nmsThreshold = 0.4;
+    int inputWidth = 320;
+    int inputHeight = 320;
+    std::string model = QApplication::instance()->applicationDirPath().toStdString() + "/../../../models/frozen_east_text_detection.pb";
+
+    // Load DNN network if it's not already loaded
+    if (net.empty())
+    {
+        net = cv::dnn::readNet(model);
+    }
+
+    std::vector<cv::Mat> outs;
+    // Define the names of the layers to be used
+    std::vector<std::string> layerNames(2);
+    layerNames[0] = "feature_fusion/Conv_7/Sigmoid";
+    layerNames[1] = "feature_fusion/concat_3";
+
+    // Convert QImage to cv::Mat
+    cv::Mat frame = cv::Mat(
+                        image.height(),
+                        image.width(),
+                        CV_8UC3,
+                        image.bits(),
+                        image.bytesPerLine())
+                        .clone();
+    cv::Mat blob; // blob = binary large object
+
+    // Preprocess the image to be fed into the neural network
+    cv::dnn::blobFromImage(
+        frame, blob,
+        1.0, cv::Size(inputWidth, inputHeight),
+        cv::Scalar(123.68, 116.78, 103.94), true, false);
+    // Set the processed image as the input to the neural network
+    net.setInput(blob);
+    // Run forward pass to get outputs of the specified layers
+    net.forward(outs, layerNames);
+
+    // Retrieve scores and geometry from the network's output
+    cv::Mat scores = outs[0];
+    cv::Mat geometry = outs[1];
+
+    std::vector<cv::RotatedRect> boxes;
+    std::vector<float> confidences;
+    // Decode the scores and geometries to bounding boxes and confidence scores
+    decode(scores, geometry, confThreshold, boxes, confidences);
+
+    std::vector<int> indices;
+    // Perform non-maximum suppression to remove overlapping boxes
+    cv::dnn::NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
+
+    // Render detections
+    cv::Point2f ratio((float)frame.cols / inputWidth, (float)frame.rows / inputHeight);
+    cv::Scalar green = cv::Scalar(0, 255, 0);
+
+    // Iterate through the indices of the detected areas, draw rectangles and annotate them
+    for (size_t i = 0; i < indices.size(); ++i)
+    {
+        cv::RotatedRect &box = boxes[indices[i]];
+        cv::Rect area = box.boundingRect();
+        area.x *= ratio.x;
+        area.width *= ratio.x;
+        area.y *= ratio.y;
+        area.height *= ratio.y;
+        areas.push_back(area);                // Add area to the provided vector
+        cv::rectangle(frame, area, green, 1); // Draw rectangle around detected area
+        QString index = QString("%1").arg(i);
+        // Annotate the area with its index
+        cv::putText(
+            frame, index.toStdString(), cv::Point2f(area.x, area.y - 2),
+            cv::FONT_HERSHEY_SIMPLEX, 0.5, green, 1);
+    }
+    return frame; // Return the frame with annotations
+}
+
+void MainWindow::decode(const cv::Mat &scores, const cv::Mat &geometry, float scoreThresh,
+                        std::vector<cv::RotatedRect> &detections, std::vector<float> &confidences)
+{
+    // Assert statements to ensure the dimensions of the scores and geometry matrices are correct
+    CV_Assert(scores.dims == 4);
+    CV_Assert(geometry.dims == 4);
+    CV_Assert(scores.size[0] == 1);
+    CV_Assert(scores.size[1] == 1);
+    CV_Assert(geometry.size[0] == 1);
+    CV_Assert(geometry.size[1] == 5);
+    CV_Assert(scores.size[2] == geometry.size[2]);
+    CV_Assert(scores.size[3] == geometry.size[3]);
+
+    // Clear any previous detections
+    detections.clear();
+
+    // Get the height and width of the scores matrix (this represents the spatial layout of detections)
+    const int height = scores.size[2];
+    const int width = scores.size[3];
+    for (int y = 0; y < height; ++y)
+    {
+        // Pointers to data for this row (y) in the scores and geometry matrices
+        const float *scoresData = scores.ptr<float>(0, 0, y);
+        const float *x0_data = geometry.ptr<float>(0, 0, y);
+        const float *x1_data = geometry.ptr<float>(0, 1, y);
+        const float *x2_data = geometry.ptr<float>(0, 2, y);
+        const float *x3_data = geometry.ptr<float>(0, 3, y);
+        const float *anglesData = geometry.ptr<float>(0, 4, y);
+        for (int x = 0; x < width; ++x)
+        {
+            float score = scoresData[x];
+            // Skip detections with scores lower than threshold
+            if (score < scoreThresh)
+                continue;
+
+            // Decode a prediction, transforming it into a rotated rectangle
+            // Multiply by 4 because feature maps are 4 times smaller than the input image
+            float offsetX = x * 4.0f, offsetY = y * 4.0f;
+            float angle = anglesData[x];
+            float cosA = std::cos(angle);
+            float sinA = std::sin(angle);
+            float h = x0_data[x] + x2_data[x];
+            float w = x1_data[x] + x3_data[x];
+
+            // Calculate offset and points to define the rotated rectangle
+            cv::Point2f offset(offsetX + cosA * x1_data[x] + sinA * x2_data[x],
+                               offsetY - sinA * x1_data[x] + cosA * x2_data[x]);
+            cv::Point2f p1 = cv::Point2f(-sinA * h, -cosA * h) + offset;
+            cv::Point2f p3 = cv::Point2f(-cosA * w, sinA * w) + offset;
+            cv::RotatedRect r(0.5f * (p1 + p3), cv::Size2f(w, h), -angle * 180.0f / (float)CV_PI);
+
+            // Add the detection and confidence score to the result vectors
+            detections.push_back(r);
+            confidences.push_back(score);
+        }
+    }
 }
