@@ -14,10 +14,10 @@ EQ            = =
 
 CC            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 CXX           = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
-DEFINES       = -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
+DEFINES       = -DTESSDATA_PREFIX=\"/opt/homebrew/share/tessdata/\" -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -mmacosx-version-min=10.13 -Wall -Wextra -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -stdlib=libc++ -O2 -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -mmacosx-version-min=10.13 -Wall -Wextra -fPIC $(DEFINES)
-INCPATH       = -I. -I. -I/opt/homebrew/include/opencv4 -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/AGL.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -F/opt/homebrew/Cellar/qt@5/5.15.10/lib
+INCPATH       = -I. -I. -I/opt/homebrew/include/opencv4 -I/opt/homebrew/include/tesseract_nested -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/AGL.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -F/opt/homebrew/Cellar/qt@5/5.15.10/lib
 QMAKE         = /opt/homebrew/opt/qt@5/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -40,7 +40,7 @@ DISTNAME      = 05_OpticalCharacterRecognition1.0.0
 DISTDIR = /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition/.tmp/05_OpticalCharacterRecognition1.0.0
 LINK          = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
 LFLAGS        = -stdlib=libc++ -headerpad_max_install_names $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -mmacosx-version-min=10.13 -Wl,-rpath,@executable_path/../Frameworks
-LIBS          = $(SUBLIBS) -F/opt/homebrew/Cellar/qt@5/5.15.10/lib -L/opt/homebrew/opt/opencv/lib -lopencv_core -lopencv_imgproc -lopencv_dnn -framework QtWidgets -framework QtGui -framework AppKit -framework Metal -framework QtCore -framework DiskArbitration -framework IOKit -framework OpenGL -framework AGL   
+LIBS          = $(SUBLIBS) -F/opt/homebrew/Cellar/qt@5/5.15.10/lib -L/opt/homebrew/opt/opencv/lib -lopencv_core -lopencv_imgproc -lopencv_dnn -L/opt/homebrew/lib -ltesseract -framework QtWidgets -framework QtGui -framework AppKit -framework Metal -framework QtCore -framework DiskArbitration -framework IOKit -framework OpenGL -framework AGL   
 AR            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq
 RANLIB        = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib -s
 SED           = sed
@@ -824,6 +824,14 @@ moc_mainwindow.cpp: mainwindow.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qcheckbox.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QTimer \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qtimer.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/baseapi.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/export.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/pageiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/publictypes.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/resultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/ltrresultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/unichar.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/version.h \
 		/opt/homebrew/include/opencv4/opencv2/opencv.hpp \
 		/opt/homebrew/include/opencv4/opencv2/opencv_modules.hpp \
 		/opt/homebrew/include/opencv4/opencv2/core.hpp \
@@ -935,7 +943,7 @@ moc_mainwindow.cpp: mainwindow.h \
 		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp \
 		moc_predefs.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc
-	/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc $(DEFINES) --include /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition/moc_predefs.h -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition -I/opt/homebrew/include/opencv4 -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/opt/homebrew/Cellar/qt@5/5.15.10/lib mainwindow.h -o moc_mainwindow.cpp
+	/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc $(DEFINES) --include /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition/moc_predefs.h -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition -I/opt/homebrew/include/opencv4 -I/opt/homebrew/include/tesseract_nested -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/opt/homebrew/Cellar/qt@5/5.15.10/lib mainwindow.h -o moc_mainwindow.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -984,6 +992,14 @@ main.o: main.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Heade
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qcheckbox.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QTimer \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qtimer.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/baseapi.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/export.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/pageiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/publictypes.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/resultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/ltrresultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/unichar.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/version.h \
 		/opt/homebrew/include/opencv4/opencv2/opencv.hpp \
 		/opt/homebrew/include/opencv4/opencv2/opencv_modules.hpp \
 		/opt/homebrew/include/opencv4/opencv2/core.hpp \
@@ -1134,6 +1150,14 @@ mainwindow.o: mainwindow.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.fra
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qcheckbox.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QTimer \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qtimer.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/baseapi.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/export.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/pageiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/publictypes.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/resultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/ltrresultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/unichar.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/version.h \
 		/opt/homebrew/include/opencv4/opencv2/opencv.hpp \
 		/opt/homebrew/include/opencv4/opencv2/opencv_modules.hpp \
 		/opt/homebrew/include/opencv4/opencv2/core.hpp \

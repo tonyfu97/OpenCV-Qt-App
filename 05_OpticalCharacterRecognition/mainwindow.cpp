@@ -7,7 +7,7 @@
 
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), currentImage(nullptr)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), currentImage(nullptr), tesseractAPI(nullptr)
 {
     initUI();
 }
@@ -64,12 +64,15 @@ void MainWindow::createActions()
 
     // add actions to toolbars
     fileToolBar->addAction(openAction);
+    ocrAction = new QAction("OCR", this);
+    fileToolBar->addAction(ocrAction);
 
-     // connect the signals and slots
+    // connect the signals and slots
     connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
     connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
     connect(saveImageAsAction, SIGNAL(triggered(bool)), this, SLOT(saveImageAs()));
     connect(saveTextAsAction, SIGNAL(triggered(bool)), this, SLOT(saveTextAs()));
+    connect(ocrAction, SIGNAL(triggered(bool)), this, SLOT(extractText()));
 
     setupShortcuts();
 }
@@ -92,7 +95,8 @@ void MainWindow::openImage()
     dialog.setFileMode(QFileDialog::ExistingFile);
     dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
     QStringList filePaths;
-    if (dialog.exec()) {
+    if (dialog.exec())
+    {
         filePaths = dialog.selectedFiles();
         showImage(filePaths.at(0));
     }
@@ -113,7 +117,8 @@ void MainWindow::showImage(QString path)
 
 void MainWindow::saveImageAs()
 {
-    if (currentImage == nullptr) {
+    if (currentImage == nullptr)
+    {
         QMessageBox::information(this, "Information", "Noting to save.");
         return;
     }
@@ -123,11 +128,15 @@ void MainWindow::saveImageAs()
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
     QStringList fileNames;
-    if (dialog.exec()) {
+    if (dialog.exec())
+    {
         fileNames = dialog.selectedFiles();
-        if(QRegExp(".+\\.(png|bmp|jpg)").exactMatch(fileNames.at(0))) {
+        if (QRegExp(".+\\.(png|bmp|jpg)").exactMatch(fileNames.at(0)))
+        {
             currentImage->pixmap().save(fileNames.at(0));
-        } else {
+        }
+        else
+        {
             QMessageBox::information(this, "Error", "Save error: bad format or filename.");
         }
     }
@@ -141,18 +150,71 @@ void MainWindow::saveTextAs()
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setNameFilter(tr("Text files (*.txt)"));
     QStringList fileNames;
-    if (dialog.exec()) {
+    if (dialog.exec())
+    {
         fileNames = dialog.selectedFiles();
-        if(QRegExp(".+\\.(txt)").exactMatch(fileNames.at(0))) {
+        if (QRegExp(".+\\.(txt)").exactMatch(fileNames.at(0)))
+        {
             QFile file(fileNames.at(0));
-            if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            {
                 QMessageBox::information(this, "Error", "Can't save text.");
                 return;
             }
             QTextStream out(&file);
             out << editor->toPlainText() << "\n";
-        } else {
+        }
+        else
+        {
             QMessageBox::information(this, "Error", "Save error: bad format or filename.");
         }
     }
+}
+
+void MainWindow::extractText()
+{
+    // Check if an image is currently loaded
+    if (currentImage == nullptr)
+    {
+        QMessageBox::information(this, "Information", "No opened image.");
+        return;
+    }
+
+    // Save the current locale and set it to the standard "C" locale
+    char *old_ctype = strdup(setlocale(LC_ALL, NULL));
+    setlocale(LC_ALL, "C");
+
+    // Check if Tesseract API is already initialized
+    if (tesseractAPI == nullptr)
+    {
+        tesseractAPI = new tesseract::TessBaseAPI();
+        // Initialize tesseract-ocr with English, specifying the tessdata path
+        if (tesseractAPI->Init(TESSDATA_PREFIX, "eng"))
+        {
+            QMessageBox::information(this, "Error", "Could not initialize tesseract.");
+            return;
+        }
+    }
+
+    // Convert the current image to a QImage in RGB888 format
+    QPixmap pixmap = currentImage->pixmap();
+    QImage image = pixmap.toImage();
+    image = image.convertToFormat(QImage::Format_RGB888);
+
+    // Set the image data to the Tesseract API
+    tesseractAPI->SetImage(image.bits(), image.width(), image.height(),
+                           3, image.bytesPerLine());
+
+    // Get the recognized text from the image
+    char *outText = tesseractAPI->GetUTF8Text();
+
+    // Set the recognized text to the text editor
+    editor->setPlainText(outText);
+
+    // Clean up the allocated text
+    delete[] outText;
+
+    // Restore the saved locale
+    setlocale(LC_ALL, old_ctype);
+    free(old_ctype);
 }

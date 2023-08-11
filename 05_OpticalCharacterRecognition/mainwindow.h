@@ -14,6 +14,8 @@
 #include <QCheckBox>
 #include <QTimer>
 
+#include "tesseract/baseapi.h"
+
 #include "opencv2/opencv.hpp"
 #include "opencv2/dnn.hpp"
 
@@ -35,6 +37,7 @@ private slots:
     void openImage();
     void saveImageAs();
     void saveTextAs();
+    void extractText();
 
 private:
     QMenu *fileMenu;
@@ -53,7 +56,10 @@ private:
     QAction *saveImageAsAction;
     QAction *saveTextAsAction;
     QAction *exitAction;
+    QAction *ocrAction;
 
     QString currentImagePath;
     QGraphicsPixmapItem *currentImage;
+
+    tesseract::TessBaseAPI *tesseractAPI;
 };
