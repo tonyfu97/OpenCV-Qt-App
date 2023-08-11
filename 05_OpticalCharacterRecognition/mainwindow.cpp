@@ -6,6 +6,7 @@
 #include <QDebug>
 
 #include "mainwindow.h"
+#include "screencapturer.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), currentImage(nullptr), tesseractAPI(nullptr)
 {
@@ -69,6 +70,8 @@ void MainWindow::createActions()
 
     // add actions to toolbars
     fileToolBar->addAction(openAction);
+    captureAction = new QAction("Capture Screen", this);
+    fileToolBar->addAction(captureAction);
     ocrAction = new QAction("OCR", this);
     fileToolBar->addAction(ocrAction);
     detectAreaCheckBox = new QCheckBox("Detect Text Areas", this);
@@ -80,6 +83,7 @@ void MainWindow::createActions()
     connect(saveImageAsAction, SIGNAL(triggered(bool)), this, SLOT(saveImageAs()));
     connect(saveTextAsAction, SIGNAL(triggered(bool)), this, SLOT(saveTextAs()));
     connect(ocrAction, SIGNAL(triggered(bool)), this, SLOT(extractText()));
+    connect(captureAction, SIGNAL(triggered(bool)), this, SLOT(captureScreen()));
 
     setupShortcuts();
 }
@@ -109,17 +113,22 @@ void MainWindow::openImage()
     }
 }
 
-void MainWindow::showImage(QString path)
+void MainWindow::showImage(QPixmap image)
 {
     imageScene->clear();
-    imageView->resetTransform();
-    QPixmap image(path);
+    imageView->resetMatrix();
     currentImage = imageScene->addPixmap(image);
     imageScene->update();
     imageView->setSceneRect(image.rect());
+}
+
+void MainWindow::showImage(QString path)
+{
+    QPixmap image(path);
+    showImage(image);
+    currentImagePath = path;
     QString status = QString("%1, %2x%3, %4 Bytes").arg(path).arg(image.width()).arg(image.height()).arg(QFile(path).size());
     mainStatusLabel->setText(status);
-    currentImagePath = path;
 }
 
 void MainWindow::showImage(cv::Mat mat)
@@ -398,4 +407,17 @@ void MainWindow::decode(const cv::Mat &scores, const cv::Mat &geometry, float sc
             confidences.push_back(score);
         }
     }
+}
+
+void MainWindow::captureScreen()
+{
+    this->setWindowState(this->windowState() | Qt::WindowMinimized);
+    QTimer::singleShot(500, this, SLOT(startCapture()));
+}
+
+void MainWindow::startCapture()
+{
+    ScreenCapturer *cap = new ScreenCapturer(this);
+    cap->show();
+    cap->activateWindow();
 }

@@ -15,7 +15,6 @@
 #include <QTimer>
 
 #include "tesseract/baseapi.h"
-
 #include "opencv2/opencv.hpp"
 #include "opencv2/dnn.hpp"
 
@@ -26,6 +25,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void showImage(QPixmap);
 
 private:
     void initUI();
@@ -43,6 +43,8 @@ private slots:
     void saveImageAs();
     void saveTextAs();
     void extractText();
+    void captureScreen();
+    void startCapture();
 
 private:
     QMenu *fileMenu;
@@ -63,6 +65,7 @@ private:
     QAction *exitAction;
     QAction *ocrAction;
     QCheckBox *detectAreaCheckBox;
+    QAction *captureAction;
 
     QString currentImagePath;
     QGraphicsPixmapItem *currentImage;

@@ -30,5 +30,5 @@ unix: mac {
 DEFINES += TESSDATA_PREFIX=\\\"/opt/homebrew/share/tessdata/\\\"
 
 # Input
-HEADERS += mainwindow.h
-SOURCES += main.cpp mainwindow.cpp
+HEADERS += mainwindow.h screencapturer.h
+SOURCES += main.cpp mainwindow.cpp screencapturer.cpp

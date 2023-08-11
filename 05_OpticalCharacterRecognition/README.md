@@ -118,8 +118,8 @@
 
 The EAST model ([paper](https://arxiv.org/pdf/1704.03155.pdf)) is designed for detecting and localizing text regions in images. Unlike Optical Character Recognition (OCR) systems, the EAST model doesn't interpret or read the text. Instead, it identifies text regions by drawing bounding boxes or quadrilateral shapes around them. The model yields two outputs: a "score map" and a "geometry map."
 
-- **Score Map**: A 2D array containing scores that indicate the probability of a text region being present at a specific location.
-- **Geometry Map**: A 2D array containing values that encode the coordinates of the quadrilateral shapes surrounding the text regions.
+- **Score Map**: A 2D array containing scores that indicate the probability of a text region being present at a specific location. The `scores` matrix is 4-dimensional, with dimensions `(1, 1, height, width)`. The first two dimensions are singleton dimensions, and the last two dimensions represent the spatial layout of the detected regions. 
+- **Geometry Map**: A 2D array containing values that encode the coordinates of the quadrilateral shapes surrounding the text regions. The `geometry` matrix is also 4-dimensional, with dimensions `(1, 5, height, width)`. The first dimension is a singleton dimension, the second dimension has a size of 5, and the last two dimensions represent the spatial layout. The 5 elements of the second dimension are the height, width, vertical offset, horizontal offset, and angle, respecdtively, of the quadrilateral shape.
 
 The EAST model is trained using the [ICDAR 2015](https://rrc.cvc.uab.es/?ch=4&com=downloads) dataset.
 
@@ -211,4 +211,3 @@ The EAST model is trained using the [ICDAR 2015](https://rrc.cvc.uab.es/?ch=4&co
   ```
 
 **Results** ![east_example](images/east_example.png)
-

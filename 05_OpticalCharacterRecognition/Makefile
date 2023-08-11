@@ -53,10 +53,14 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = main.cpp \
-		mainwindow.cpp moc_mainwindow.cpp
+		mainwindow.cpp \
+		screencapturer.cpp moc_mainwindow.cpp \
+		moc_screencapturer.cpp
 OBJECTS       = main.o \
 		mainwindow.o \
-		moc_mainwindow.o
+		screencapturer.o \
+		moc_mainwindow.o \
+		moc_screencapturer.o
 DIST          = /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_pre.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/qdevice.pri \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/device_config.prf \
@@ -269,8 +273,10 @@ DIST          = /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_pre.prf 
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/exceptions.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/yacc.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/lex.prf \
-		05_OpticalCharacterRecognition.pro mainwindow.h main.cpp \
-		mainwindow.cpp
+		05_OpticalCharacterRecognition.pro mainwindow.h \
+		screencapturer.h main.cpp \
+		mainwindow.cpp \
+		screencapturer.cpp
 QMAKE_TARGET  = 05_OpticalCharacterRecognition
 DESTDIR       = 
 TARGET        = 05_OpticalCharacterRecognition.app/Contents/MacOS/05_OpticalCharacterRecognition
@@ -758,8 +764,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents mainwindow.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp mainwindow.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents mainwindow.h screencapturer.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp mainwindow.cpp screencapturer.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -794,9 +800,9 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/data/dummy.cpp
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -pipe -stdlib=libc++ -O2 -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -mmacosx-version-min=10.13 -Wall -Wextra -dM -E -o moc_predefs.h /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_mainwindow.cpp
+compiler_moc_header_make_all: moc_mainwindow.cpp moc_screencapturer.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_mainwindow.cpp
+	-$(DEL_FILE) moc_mainwindow.cpp moc_screencapturer.cpp
 moc_mainwindow.cpp: mainwindow.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QMainWindow \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qmainwindow.h \
@@ -941,9 +947,175 @@ moc_mainwindow.cpp: mainwindow.h \
 		/opt/homebrew/include/opencv4/opencv2/video.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video/tracking.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp \
+		screencapturer.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QWidget \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qwidget.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QPaintEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qevent.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QMouseEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QPoint \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qpoint.h \
+		mainwindow.h \
 		moc_predefs.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc
 	/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc $(DEFINES) --include /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition/moc_predefs.h -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition -I/opt/homebrew/include/opencv4 -I/opt/homebrew/include/tesseract_nested -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/opt/homebrew/Cellar/qt@5/5.15.10/lib mainwindow.h -o moc_mainwindow.cpp
+
+moc_screencapturer.cpp: screencapturer.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QWidget \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qwidget.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QPixmap \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qpixmap.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QPaintEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qevent.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QMouseEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QPoint \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qpoint.h \
+		mainwindow.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QMainWindow \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QMenuBar \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qmenubar.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QToolBar \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qtoolbar.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QAction \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qaction.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QLabel \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qlabel.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QGraphicsScene \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qgraphicsscene.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QGraphicsView \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qgraphicsview.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QStatusBar \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qstatusbar.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QGraphicsPixmapItem \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qgraphicsitem.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QTextEdit \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qtextedit.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QCheckBox \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qcheckbox.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QTimer \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qtimer.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/baseapi.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/export.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/pageiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/publictypes.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/resultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/ltrresultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/unichar.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/version.h \
+		/opt/homebrew/include/opencv4/opencv2/opencv.hpp \
+		/opt/homebrew/include/opencv4/opencv2/opencv_modules.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cvdef.h \
+		/opt/homebrew/include/opencv4/opencv2/core/version.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/hal/interface.h \
+		/opt/homebrew/include/opencv4/opencv2/core/cv_cpu_dispatch.h \
+		/opt/homebrew/include/opencv4/opencv2/core/cv_cpu_helper.h \
+		/opt/homebrew/include/opencv4/opencv2/core/hal/msa_macros.h \
+		/opt/homebrew/include/opencv4/opencv2/core/fast_math.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/base.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cvstd.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cvstd_wrapper.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/neon_utils.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/vsx_utils.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/check.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/traits.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/matx.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/saturate.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/types.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/mat.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/bufferpool.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/mat.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/persistence.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/operations.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cvstd.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/utility.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/utils/instrumentation.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/utils/tls.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/optim.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/ovx.hpp \
+		/opt/homebrew/include/opencv4/opencv2/calib3d.hpp \
+		/opt/homebrew/include/opencv4/opencv2/features2d.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann/miniflann.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann/defines.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/config.h \
+		/opt/homebrew/include/opencv4/opencv2/core/affine.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/dnn.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/async.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/version.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/dict.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/layer.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/dnn.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/utils/inference_engine.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann/flann_base.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann/general.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/matrix.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/params.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/any.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/saving.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/nn_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/result_set.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/all_indices.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/kdtree_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/dynamic_bitset.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/dist.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/heap.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/allocator.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/random.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/kdtree_single_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/kmeans_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/logger.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/composite_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/linear_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/hierarchical_clustering_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/lsh_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/lsh_table.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/autotuned_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/ground_truth.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/index_testing.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/timer.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/sampling.h \
+		/opt/homebrew/include/opencv4/opencv2/highgui.hpp \
+		/opt/homebrew/include/opencv4/opencv2/imgcodecs.hpp \
+		/opt/homebrew/include/opencv4/opencv2/videoio.hpp \
+		/opt/homebrew/include/opencv4/opencv2/imgproc.hpp \
+		/opt/homebrew/include/opencv4/opencv2/imgproc/segmentation.hpp \
+		/opt/homebrew/include/opencv4/opencv2/ml.hpp \
+		/opt/homebrew/include/opencv4/opencv2/ml/ml.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/aruco_detector.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/aruco_dictionary.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/aruco_board.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/graphical_code_detector.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/face.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/charuco_detector.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/barcode.hpp \
+		/opt/homebrew/include/opencv4/opencv2/photo.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/warpers.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/warpers.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cuda.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cuda_types.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cuda.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/warpers_inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/matchers.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/motion_estimators.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/util.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/util_inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/camera.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/exposure_compensate.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/seam_finders.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/blenders.hpp \
+		/opt/homebrew/include/opencv4/opencv2/video.hpp \
+		/opt/homebrew/include/opencv4/opencv2/video/tracking.hpp \
+		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp \
+		screencapturer.h \
+		moc_predefs.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc
+	/opt/homebrew/Cellar/qt@5/5.15.10/bin/moc $(DEFINES) --include /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition/moc_predefs.h -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition -I/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition -I/opt/homebrew/include/opencv4 -I/opt/homebrew/include/tesseract_nested -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/14.0.3/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/opt/homebrew/Cellar/qt@5/5.15.10/lib screencapturer.h -o moc_screencapturer.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -1108,7 +1280,15 @@ main.o: main.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Heade
 		/opt/homebrew/include/opencv4/opencv2/stitching/detail/blenders.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video/tracking.hpp \
-		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp
+		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp \
+		screencapturer.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QWidget \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qwidget.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QPaintEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qevent.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QMouseEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QPoint \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qpoint.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 mainwindow.o: mainwindow.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QApplication \
@@ -1266,11 +1446,195 @@ mainwindow.o: mainwindow.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.fra
 		/opt/homebrew/include/opencv4/opencv2/stitching/detail/blenders.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video.hpp \
 		/opt/homebrew/include/opencv4/opencv2/video/tracking.hpp \
-		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp
+		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp \
+		screencapturer.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QWidget \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qwidget.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QPaintEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QMouseEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QPoint \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qpoint.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp
+
+screencapturer.o: screencapturer.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QApplication \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qapplication.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QGuiApplication \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qguiapplication.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QDesktopWidget \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qdesktopwidget.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QMessageBox \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qmessagebox.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QRect \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qrect.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QScreen \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qscreen.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QPainter \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qpainter.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QColor \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qcolor.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QRegion \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qregion.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QShortcut \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qshortcut.h \
+		screencapturer.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QWidget \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qwidget.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QPixmap \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qpixmap.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QPaintEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/qevent.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers/QMouseEvent \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QPoint \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qpoint.h \
+		mainwindow.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QMainWindow \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QMenuBar \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qmenubar.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QToolBar \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qtoolbar.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QAction \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qaction.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QLabel \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qlabel.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QGraphicsScene \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qgraphicsscene.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QGraphicsView \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qgraphicsview.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QStatusBar \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qstatusbar.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QGraphicsPixmapItem \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qgraphicsitem.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QTextEdit \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qtextedit.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QCheckBox \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qcheckbox.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QTimer \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qtimer.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/baseapi.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/export.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/pageiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/publictypes.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/resultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/ltrresultiterator.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/unichar.h \
+		/opt/homebrew/include/tesseract_nested/tesseract/version.h \
+		/opt/homebrew/include/opencv4/opencv2/opencv.hpp \
+		/opt/homebrew/include/opencv4/opencv2/opencv_modules.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cvdef.h \
+		/opt/homebrew/include/opencv4/opencv2/core/version.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/hal/interface.h \
+		/opt/homebrew/include/opencv4/opencv2/core/cv_cpu_dispatch.h \
+		/opt/homebrew/include/opencv4/opencv2/core/cv_cpu_helper.h \
+		/opt/homebrew/include/opencv4/opencv2/core/hal/msa_macros.h \
+		/opt/homebrew/include/opencv4/opencv2/core/fast_math.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/base.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cvstd.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cvstd_wrapper.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/neon_utils.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/vsx_utils.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/check.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/traits.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/matx.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/saturate.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/types.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/mat.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/bufferpool.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/mat.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/persistence.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/operations.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cvstd.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/utility.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/utils/instrumentation.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/utils/tls.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/optim.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/ovx.hpp \
+		/opt/homebrew/include/opencv4/opencv2/calib3d.hpp \
+		/opt/homebrew/include/opencv4/opencv2/features2d.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann/miniflann.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann/defines.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/config.h \
+		/opt/homebrew/include/opencv4/opencv2/core/affine.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/dnn.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/async.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/version.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/dict.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/layer.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/dnn.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/dnn/utils/inference_engine.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann/flann_base.hpp \
+		/opt/homebrew/include/opencv4/opencv2/flann/general.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/matrix.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/params.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/any.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/saving.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/nn_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/result_set.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/all_indices.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/kdtree_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/dynamic_bitset.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/dist.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/heap.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/allocator.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/random.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/kdtree_single_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/kmeans_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/logger.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/composite_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/linear_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/hierarchical_clustering_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/lsh_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/lsh_table.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/autotuned_index.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/ground_truth.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/index_testing.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/timer.h \
+		/opt/homebrew/include/opencv4/opencv2/flann/sampling.h \
+		/opt/homebrew/include/opencv4/opencv2/highgui.hpp \
+		/opt/homebrew/include/opencv4/opencv2/imgcodecs.hpp \
+		/opt/homebrew/include/opencv4/opencv2/videoio.hpp \
+		/opt/homebrew/include/opencv4/opencv2/imgproc.hpp \
+		/opt/homebrew/include/opencv4/opencv2/imgproc/segmentation.hpp \
+		/opt/homebrew/include/opencv4/opencv2/ml.hpp \
+		/opt/homebrew/include/opencv4/opencv2/ml/ml.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/aruco_detector.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/aruco_dictionary.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/aruco_board.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/graphical_code_detector.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/face.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/charuco_detector.hpp \
+		/opt/homebrew/include/opencv4/opencv2/objdetect/barcode.hpp \
+		/opt/homebrew/include/opencv4/opencv2/photo.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/warpers.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/warpers.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cuda.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cuda_types.hpp \
+		/opt/homebrew/include/opencv4/opencv2/core/cuda.inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/warpers_inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/matchers.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/motion_estimators.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/util.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/util_inl.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/camera.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/exposure_compensate.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/seam_finders.hpp \
+		/opt/homebrew/include/opencv4/opencv2/stitching/detail/blenders.hpp \
+		/opt/homebrew/include/opencv4/opencv2/video.hpp \
+		/opt/homebrew/include/opencv4/opencv2/video/tracking.hpp \
+		/opt/homebrew/include/opencv4/opencv2/video/background_segm.hpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o screencapturer.o screencapturer.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
+
+moc_screencapturer.o: moc_screencapturer.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_screencapturer.o moc_screencapturer.cpp
 
 ####### Install
 
