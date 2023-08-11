@@ -33,9 +33,10 @@ private:
 private slots:
     void showCameraInfo();
     void openCamera();
-    void updateFrame(cv::Mat*);
+    void updateFrame(cv::Mat *);
     void takePhoto();
     void appendSavedPhoto(QString name);
+    void updateMasks(int status);
 
 private:
     QMenu *fileMenu;
@@ -43,6 +44,8 @@ private:
     QAction *cameraInfoAction;
     QAction *openCameraAction;
     QAction *exitAction;
+
+    QCheckBox *mask_checkboxes[CaptureThread::MASK_COUNT];
 
     QGraphicsScene *imageScene;
     QGraphicsView *imageView;

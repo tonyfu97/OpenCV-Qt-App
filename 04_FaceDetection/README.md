@@ -194,7 +194,7 @@ icon = cv::Mat(image.height(), image.width(), CV_8UC3,
 
 - **Integrating filter images**: Use the resource system as described above to link and load the filter images.
 
-- **Scale, Rotate, and Paint the filters**: To fit the filters (e.g., glasses) onto a face, we must scale, rotate, and then paint them. We determine the scale of the glasses by measuring the distance between the outer eyes. To match the tilt of the face, the glasses are rotated using the `cv::warpAffine` method. The angle of rotation is calculated as the negative arctangent of the slope formed by the line connecting the outer ends of the eyes. The operation `frame(rec) &= rotated;` is a bitwise AND operation that combines the pixels of the `frame` and `rotated` matrices where the mask of `rotated` is non-zero.
+- **Scale, Rotate, and Paint the filters**: To fit the filters (e.g., glasses) onto a face, we must scale, rotate, and then paint them. We determine the scale of the glasses by measuring the distance between the outer eyes. To match the tilt of the face, the glasses are rotated using the `cv::warpAffine` method. The angle of rotation is calculated as the negative arctangent of the slope formed by the line connecting the outer ends of the eyes. The operation `frame(rec) &= rotated;` is a bitwise AND operation that combines the pixels of the `frame` and `rotated` matrices where the mask of `rotated` is non-zero. (`frame(rec)` selects a region of interest (ROI) from the frame matrix that corresponds to the rectangle defined by rec.)
 
 ```cpp
 void CaptureThread::drawGlasses(cv::Mat &frame, vector<cv::Point2f> &marks)
@@ -234,3 +234,75 @@ void CaptureThread::drawGlasses(cv::Mat &frame, vector<cv::Point2f> &marks)
 **Results**:
 
 ![glasses_ornament_example](glasses_ornament_example.png)
+
+
+### 6. QCheckBox
+
+- **Step 1: Setup**
+  Set up our constants and variables:
+  ```cpp
+  #include <QCheckBox>
+
+  const int NUM_MASKS = 3;
+  QCheckBox *mask_checkboxes[NUM_MASKS];
+  uint8_t masks_flag = 0;
+
+  enum MASK_TYPE
+  {
+      MASK_A = 0,
+      MASK_B,
+      MASK_C
+  };
+  ```
+  - `NUM_MASKS`: The total number of mask checkboxes we wish to have.
+  - `mask_checkboxes`: An array to store the pointers to our checkboxes.
+  - `masks_flag`: A flag to represent the state of the checkboxes.
+  - `MASK_TYPE`: An enumeration to give each mask a distinct type.
+
+- **Step 2: Creating and Initializing the QCheckBoxes**
+  Create the checkboxes, add them to our layout, and set their initial text:
+
+  ```cpp
+  for (int i = 0; i < NUM_MASKS; i++)
+  {
+      mask_checkboxes[i] = new QCheckBox(this);
+      masks_layout->addWidget(mask_checkboxes[i], 0, i + 1);
+      connect(mask_checkboxes[i], &QCheckBox::stateChanged, this, &YourClassName::updateMasks);
+  }
+
+  mask_checkboxes[0]->setText("Mask A");
+  mask_checkboxes[1]->setText("Mask B");
+  mask_checkboxes[2]->setText("Mask C");
+  ```
+
+  We loop through the number of masks, creating a new `QCheckBox` for each. Each checkbox is then added to `masks_layout` and connected to the `updateMasks` slot to handle its state change.
+
+- **Step 3: Setting the Initial State**
+  By default, we'll set all checkboxes to the unchecked state:
+  ```cpp
+  for (int i = 0; i < NUM_MASKS; i++)
+  {
+      mask_checkboxes[i]->setCheckState(Qt::Unchecked);
+  }
+  ```
+
+- **Step 4: Handling Checkbox State Changes**
+  Whenever a checkbox's state changes, the `updateMasks` slot is triggered. Inside this slot, we determine which checkbox was triggered and update the mask's flag accordingly:
+
+  ```cpp
+  QCheckBox *box = qobject_cast<QCheckBox *>(sender());
+  for (int i = 0; i < NUM_MASKS; i++)
+  {
+      if (mask_checkboxes[i] == box)
+      {
+          capturer->updateMasksFlag(static_cast<MASK_TYPE>(i), box->isChecked());
+      }
+  }
+  ```
+  - We first determine which checkbox triggered the slot using `qobject_cast`.
+  - We then loop through our `mask_checkboxes` array to find the matching checkbox.
+  - Once found, we call `updateMasksFlag`, updating the mask's flag based on whether the checkbox is checked.
+
+**Final Results**
+
+![final_example](final_example.png)

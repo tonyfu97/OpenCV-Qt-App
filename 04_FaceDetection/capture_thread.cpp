@@ -64,6 +64,9 @@ void CaptureThread::run()
         {
             break;
         }
+        if (masks_flag > 0)
+            detectFaces(tmp_frame);
+
         if (taking_photo)
         {
             takePhoto(tmp_frame);
@@ -115,9 +118,12 @@ void CaptureThread::detectFaces(cv::Mat &frame)
     cv::Scalar color = cv::Scalar(0, 0, 255); // red
 
     // draw the circumscribe rectangles
-    for (size_t i = 0; i < faces.size(); i++)
+    if (isMaskOn(RECTANGLE))
     {
-        cv::rectangle(frame, faces[i], color, 1);
+        for (size_t i = 0; i < faces.size(); i++)
+        {
+            cv::rectangle(frame, faces[i], color, 1);
+        }
     }
 
     vector<vector<cv::Point2f>> shapes;
@@ -126,11 +132,19 @@ void CaptureThread::detectFaces(cv::Mat &frame)
         // Draw facial land marks
         for (unsigned long i = 0; i < faces.size(); i++)
         {
-            for (unsigned long k = 0; k < shapes[i].size(); k++)
+            if (isMaskOn(LANDMARKS))
             {
-                cv::circle(frame, shapes[i][k], 2, color, cv::FILLED);
+                for (unsigned long k = 0; k < shapes[i].size(); k++)
+                {
+                    cv::circle(frame, shapes[i][k], 2, color, cv::FILLED);
+                }
             }
-            drawGlasses(frame, shapes[i]);
+            if (isMaskOn(GLASSES))
+                drawGlasses(frame, shapes[i]);
+            if (isMaskOn(MUSTACHE))
+                drawMustache(frame, shapes[i]);
+            if (isMaskOn(MOUSE_NOSE))
+                drawMouseNose(frame, shapes[i]);
         }
     }
 }
@@ -184,7 +198,8 @@ void CaptureThread::drawGlasses(cv::Mat &frame, vector<cv::Point2f> &marks)
     center = cv::Point((left_eye_end.x + right_eye_end.x) / 2, (left_eye_end.y + right_eye_end.y) / 2);
     cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
 
-    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows) {
+    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows)
+    {
         qWarning() << "Invalid painting rectangle!";
         return;
     }
@@ -217,7 +232,8 @@ void CaptureThread::drawMustache(cv::Mat &frame, vector<cv::Point2f> &marks)
     center = cv::Point((nose_bottom.x + mouth_top.x) / 2, (nose_bottom.y + mouth_top.y) / 2);
     cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
 
-    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows) {
+    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows)
+    {
         qWarning() << "Invalid painting rectangle!";
         return;
     }
@@ -250,7 +266,8 @@ void CaptureThread::drawMouseNose(cv::Mat &frame, vector<cv::Point2f> &marks)
     center = marks[30];
     cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
 
-    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows) {
+    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows)
+    {
         qWarning() << "Invalid painting rectangle!";
         return;
     }
