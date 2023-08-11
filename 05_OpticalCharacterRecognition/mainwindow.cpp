@@ -7,7 +7,7 @@
 
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), currentImage(nullptr)
 {
     initUI();
 }
@@ -65,6 +65,12 @@ void MainWindow::createActions()
     // add actions to toolbars
     fileToolBar->addAction(openAction);
 
+     // connect the signals and slots
+    connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
+    connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openImage()));
+    connect(saveImageAsAction, SIGNAL(triggered(bool)), this, SLOT(saveImageAs()));
+    connect(saveTextAsAction, SIGNAL(triggered(bool)), this, SLOT(saveTextAs()));
+
     setupShortcuts();
 }
 
@@ -77,4 +83,76 @@ void MainWindow::setupShortcuts()
     shortcuts.clear();
     shortcuts << (Qt::CTRL + Qt::Key_Q);
     exitAction->setShortcuts(shortcuts);
+}
+
+void MainWindow::openImage()
+{
+    QFileDialog dialog(this);
+    dialog.setWindowTitle("Open Image");
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
+    QStringList filePaths;
+    if (dialog.exec()) {
+        filePaths = dialog.selectedFiles();
+        showImage(filePaths.at(0));
+    }
+}
+
+void MainWindow::showImage(QString path)
+{
+    imageScene->clear();
+    imageView->resetTransform();
+    QPixmap image(path);
+    currentImage = imageScene->addPixmap(image);
+    imageScene->update();
+    imageView->setSceneRect(image.rect());
+    QString status = QString("%1, %2x%3, %4 Bytes").arg(path).arg(image.width()).arg(image.height()).arg(QFile(path).size());
+    mainStatusLabel->setText(status);
+    currentImagePath = path;
+}
+
+void MainWindow::saveImageAs()
+{
+    if (currentImage == nullptr) {
+        QMessageBox::information(this, "Information", "Noting to save.");
+        return;
+    }
+    QFileDialog dialog(this);
+    dialog.setWindowTitle("Save Image As ...");
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
+    QStringList fileNames;
+    if (dialog.exec()) {
+        fileNames = dialog.selectedFiles();
+        if(QRegExp(".+\\.(png|bmp|jpg)").exactMatch(fileNames.at(0))) {
+            currentImage->pixmap().save(fileNames.at(0));
+        } else {
+            QMessageBox::information(this, "Error", "Save error: bad format or filename.");
+        }
+    }
+}
+
+void MainWindow::saveTextAs()
+{
+    QFileDialog dialog(this);
+    dialog.setWindowTitle("Save Text As ...");
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setNameFilter(tr("Text files (*.txt)"));
+    QStringList fileNames;
+    if (dialog.exec()) {
+        fileNames = dialog.selectedFiles();
+        if(QRegExp(".+\\.(txt)").exactMatch(fileNames.at(0))) {
+            QFile file(fileNames.at(0));
+            if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                QMessageBox::information(this, "Error", "Can't save text.");
+                return;
+            }
+            QTextStream out(&file);
+            out << editor->toPlainText() << "\n";
+        } else {
+            QMessageBox::information(this, "Error", "Save error: bad format or filename.");
+        }
+    }
 }

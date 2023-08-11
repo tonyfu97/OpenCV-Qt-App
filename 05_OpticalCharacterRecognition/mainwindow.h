@@ -29,6 +29,12 @@ private:
     void initUI();
     void createActions();
     void setupShortcuts();
+    void showImage(QString);
+
+private slots:
+    void openImage();
+    void saveImageAs();
+    void saveTextAs();
 
 private:
     QMenu *fileMenu;
@@ -47,4 +53,7 @@ private:
     QAction *saveImageAsAction;
     QAction *saveTextAsAction;
     QAction *exitAction;
+
+    QString currentImagePath;
+    QGraphicsPixmapItem *currentImage;
 };

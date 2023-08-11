@@ -241,6 +241,7 @@ DIST          = /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_pre.prf 
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/qt_config.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang/qmake.conf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/exclusive_builds.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/mac/sdk.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/toolchain.prf \
@@ -278,7 +279,7 @@ TARGET        = 05_OpticalCharacterRecognition.app/Contents/MacOS/05_OpticalChar
 EXPORT_QMAKE_MAC_SDK = macosx
 EXPORT_QMAKE_MAC_SDK_VERSION = 13.3
 EXPORT_QMAKE_XCODE_DEVELOPER_PATH = /Applications/Xcode.app/Contents/Developer
-EXPORT__QMAKE_STASH_ = 
+EXPORT__QMAKE_STASH_ = /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/05_OpticalCharacterRecognition/.qmake.stash
 EXPORT_VALID_ARCHS = arm64
 EXPORT_DEFAULT_ARCHS = arm64
 EXPORT_ARCHS = $(filter $(EXPORT_VALID_ARCHS), $(if $(ARCHS), $(ARCHS), $(if $(EXPORT_DEFAULT_ARCHS), $(EXPORT_DEFAULT_ARCHS), $(EXPORT_VALID_ARCHS))))
@@ -478,6 +479,7 @@ Makefile: 05_OpticalCharacterRecognition.pro /opt/homebrew/Cellar/qt@5/5.15.10/m
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/qt_config.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang/qmake.conf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/exclusive_builds.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/mac/sdk.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/toolchain.prf \
@@ -694,6 +696,7 @@ Makefile: 05_OpticalCharacterRecognition.pro /opt/homebrew/Cellar/qt@5/5.15.10/m
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/qt_config.prf:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang/qmake.conf:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_post.prf:
+.qmake.stash:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/exclusive_builds.prf:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/mac/sdk.prf:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/toolchain.prf:
@@ -766,6 +769,7 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) -r 05_OpticalCharacterRecognition.app
+	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 
