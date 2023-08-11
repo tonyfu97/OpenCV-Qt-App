@@ -38,13 +38,40 @@
   ```
   **Solution**: Again, this is because the executable on macOS is nested. We need to define the model path like this: `QString model_path = QApplication::instance()->applicationDirPath() + "/../../../models/lbfmodel.yaml";`
 
-- **App crashed after streaming with facial landmark detector**: Got the following error
-```
-libc++abi: terminating with uncaught exception of type cv::Exception: OpenCV(4.8.0) /tmp/opencv-20230706-51996-4zw318/opencv-4.8.0/opencv_contrib/modules/face/src/facemarkLBF.cpp:430: error: (-5:Bad argument) The LBF model is not trained yet. Please provide a trained model. in function 'fitImpl'
+- **App crashed after streaming with facial landmark detector**:
+  Got the following error
+  ```
+  libc++abi: terminating with uncaught exception of type cv::Exception: OpenCV(4.8.0) /tmp/opencv-20230706-51996-4zw318/opencv-4.8.0/opencv_contrib/modules/face/src/facemarkLBF.cpp:430: error: (-5:Bad argument) The LBF model is not trained yet. Please provide a trained model. in function 'fitImpl'
 
-zsh: abort      ./04_FaceDetection.app/Contents/MacOS/04_FaceDetection
-```
-**Solution**: Forget to load the model using `mark_detector->loadModel(model_path.toStdString());`.
+  zsh: abort      ./04_FaceDetection.app/Contents/MacOS/04_FaceDetection
+  ```
+  **Solution**: Forget to load the model using `mark_detector->loadModel(model_path.toStdString());`.
+
+- **App crashed due to `CaptureThread::drawGlasses()`**: Got the following error
+  ```
+  libc++abi: terminating with uncaught exception of type cv::Exception: OpenCV(4.8.0) /tmp/opencv-20230706-51996-4zw318/opencv-4.8.0/modules/imgproc/src/resize.cpp:4062: error: (-215:Assertion failed) !ssize.empty() in function 'resize'
+
+  zsh: abort      ./04_FaceDetection.app/Contents/MacOS/04_FaceDetection
+  ```
+  **Solution**: I forgot to call `CaptureThread::loadOrnaments()` in the constructors.
+
+- **App crashed due to invalid rectanlge**: Got the follwing error
+  ```
+  libc++abi: terminating with uncaught exception of type cv::Exception: OpenCV(4.8.0) /tmp/opencv-20230706-51996-4zw318/opencv-4.8.0/modules/core/src/matrix.cpp:809: error: (-215:Assertion failed) 0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows in function 'Mat'
+
+  zsh: abort      ./04_FaceDetection.app/Contents/MacOS/04_FaceDetection
+  ```
+  **Solution**: Check if the rectangle is valid before plotting:
+  ```
+  cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
+
+  if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows) {
+    qWarning() << "Invalid painting rectangle!";
+    return;
+  }
+
+  frame(rec) &= rotated;
+  ```
 
 ### 2. Face Detection with Haar Cascade:
 
@@ -135,3 +162,75 @@ zsh: abort      ./04_FaceDetection.app/Contents/MacOS/04_FaceDetection
 **Results**:
 
 ![facial_landmark_example](facial_landmark_example.png)
+
+### 4. Qt's Resource System
+- **Resource files (.qrc)**: These are XML-based files that list the assets you wish to bundle with your application. Here's a sample template: 
+```xml
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/images">
+        <file>icon.png</file>
+        <file>background.jpg</file>
+    </qresource>
+</RCC>
+```
+
+- **Link the source file to the project**: To integrate the resource into your application, add the following to the .pro file:
+```
+RESOURCES += file_name.qrc
+```
+Afterwards, run `qmake -makefile`.
+
+- **Loading images**: With the resource system in place, images can be loaded in this manner:
+```cpp
+QImage image;
+image.load(":/images/icon.jpg");
+image = image.convertToFormat(QImage::Format_RGB888);
+icon = cv::Mat(image.height(), image.width(), CV_8UC3,
+               image.bits(), image.bytesPerLine()).clone();
+```
+
+### 5. Adding Face Filters
+
+- **Integrating filter images**: Use the resource system as described above to link and load the filter images.
+
+- **Scale, Rotate, and Paint the filters**: To fit the filters (e.g., glasses) onto a face, we must scale, rotate, and then paint them. We determine the scale of the glasses by measuring the distance between the outer eyes. To match the tilt of the face, the glasses are rotated using the `cv::warpAffine` method. The angle of rotation is calculated as the negative arctangent of the slope formed by the line connecting the outer ends of the eyes. The operation `frame(rec) &= rotated;` is a bitwise AND operation that combines the pixels of the `frame` and `rotated` matrices where the mask of `rotated` is non-zero.
+
+```cpp
+void CaptureThread::drawGlasses(cv::Mat &frame, vector<cv::Point2f> &marks)
+{
+    // resize
+    cv::Mat ornament;
+    cv::Point2f left_eye_end = marks[45];
+    cv::Point2f right_eye_end = marks[36];
+
+    double distance = cv::norm(left_eye_end - right_eye_end) * 1.5;
+    cv::resize(glasses, ornament, cv::Size(0, 0), distance / glasses.cols, distance / glasses.cols, cv::INTER_NEAREST);
+
+    // rotate
+    double angle = -atan((left_eye_end.y - right_eye_end.y) / (left_eye_end.x - right_eye_end.x));
+
+    cv::Point2f center = cv::Point(ornament.cols / 2, ornament.rows / 2);
+    cv::Mat rotateMatrix = cv::getRotationMatrix2D(center, angle * 180 / M_PI, 1.0);
+
+    cv::Mat rotated;
+    cv::warpAffine(
+        ornament, rotated, rotateMatrix, ornament.size(),
+        cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));
+
+    // paint
+    center = cv::Point((left_eye_end.x + right_eye_end.x) / 2, (left_eye_end.y + right_eye_end.y) / 2);
+    cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
+
+    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows) {
+        qWarning() << "Invalid painting rectangle!";
+        return;
+    }
+
+    frame(rec) &= rotated;
+}
+```
+
+**Results**:
+
+![glasses_ornament_example](glasses_ornament_example.png)

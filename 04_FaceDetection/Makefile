@@ -55,12 +55,14 @@ OBJECTS_DIR   = ./
 SOURCES       = main.cpp \
 		mainwindow.cpp \
 		capture_thread.cpp \
-		utilities.cpp moc_mainwindow.cpp \
+		utilities.cpp qrc_images.cpp \
+		moc_mainwindow.cpp \
 		moc_capture_thread.cpp
 OBJECTS       = main.o \
 		mainwindow.o \
 		capture_thread.o \
 		utilities.o \
+		qrc_images.o \
 		moc_mainwindow.o \
 		moc_capture_thread.o
 DIST          = /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_pre.prf \
@@ -518,6 +520,7 @@ Makefile: 04_FaceDetection.pro /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-cl
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/yacc.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/lex.prf \
 		04_FaceDetection.pro \
+		images.qrc \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtMultimedia.framework/Resources/QtMultimedia.prl \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Resources/QtWidgets.prl \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Resources/QtGui.prl \
@@ -737,6 +740,7 @@ Makefile: 04_FaceDetection.pro /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-cl
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/yacc.prf:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/lex.prf:
 04_FaceDetection.pro:
+images.qrc:
 /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtMultimedia.framework/Resources/QtMultimedia.prl:
 /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Resources/QtWidgets.prl:
 /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Resources/QtGui.prl:
@@ -771,6 +775,7 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
+	$(COPY_FILE) --parents images.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/data/dummy.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents mainwindow.h capture_thread.h utilities.h $(DISTDIR)/
 	$(COPY_FILE) --parents main.cpp mainwindow.cpp capture_thread.cpp utilities.cpp $(DISTDIR)/
@@ -800,8 +805,16 @@ check: first
 
 benchmark: first
 
-compiler_rcc_make_all:
+compiler_rcc_make_all: qrc_images.cpp
 compiler_rcc_clean:
+	-$(DEL_FILE) qrc_images.cpp
+qrc_images.cpp: images.qrc \
+		/opt/homebrew/Cellar/qt@5/5.15.10/bin/rcc \
+		ornaments/glasses.jpg \
+		ornaments/mouse-nose.jpg \
+		ornaments/mustache.jpg
+	/opt/homebrew/Cellar/qt@5/5.15.10/bin/rcc -name images images.qrc -o qrc_images.cpp
+
 compiler_moc_predefs_make_all: moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) moc_predefs.h
@@ -1092,7 +1105,7 @@ compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean 
+compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_header_clean 
 
 ####### Compile
 
@@ -1416,6 +1429,10 @@ capture_thread.o: capture_thread.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWid
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qdatetime.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QDebug \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qdebug.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QDir \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qdir.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QFile \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qfile.h \
 		utilities.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QString \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qstring.h \
@@ -1552,6 +1569,9 @@ utilities.o: utilities.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framewor
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QString \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qstring.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o utilities.o utilities.cpp
+
+qrc_images.o: qrc_images.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_images.o qrc_images.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp

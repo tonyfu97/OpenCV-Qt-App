@@ -13,12 +13,16 @@ CaptureThread::CaptureThread(int camera, QMutex *lock) : running(false), cameraI
 {
     frame_width = frame_height = 0;
     taking_photo = false;
+
+    loadOrnaments();
 }
 
 CaptureThread::CaptureThread(QString videoPath, QMutex *lock) : running(false), cameraID(-1), videoPath(videoPath), data_lock(lock)
 {
     frame_width = frame_height = 0;
     taking_photo = false;
+
+    loadOrnaments();
 }
 
 CaptureThread::~CaptureThread()
@@ -126,6 +130,130 @@ void CaptureThread::detectFaces(cv::Mat &frame)
             {
                 cv::circle(frame, shapes[i][k], 2, color, cv::FILLED);
             }
+            drawGlasses(frame, shapes[i]);
         }
     }
+}
+
+void CaptureThread::loadOrnaments()
+{
+    QImage image;
+    image.load(":/ornaments/glasses.jpg");
+    image = image.convertToFormat(QImage::Format_RGB888);
+    glasses = cv::Mat(
+                  image.height(), image.width(), CV_8UC3,
+                  image.bits(), image.bytesPerLine())
+                  .clone();
+
+    image.load(":/ornaments/mustache.jpg");
+    image = image.convertToFormat(QImage::Format_RGB888);
+    mustache = cv::Mat(
+                   image.height(), image.width(), CV_8UC3,
+                   image.bits(), image.bytesPerLine())
+                   .clone();
+
+    image.load(":/ornaments/mouse-nose.jpg");
+    image = image.convertToFormat(QImage::Format_RGB888);
+    mouse_nose = cv::Mat(
+                     image.height(), image.width(), CV_8UC3,
+                     image.bits(), image.bytesPerLine())
+                     .clone();
+}
+
+void CaptureThread::drawGlasses(cv::Mat &frame, vector<cv::Point2f> &marks)
+{
+    // resize
+    cv::Mat ornament;
+    cv::Point2f left_eye_end = marks[45];
+    cv::Point2f right_eye_end = marks[36];
+    double distance = cv::norm(left_eye_end - right_eye_end) * 1.5;
+    cv::resize(glasses, ornament, cv::Size(0, 0), distance / glasses.cols, distance / glasses.cols, cv::INTER_NEAREST);
+
+    // rotate
+    double angle = -atan((left_eye_end.y - right_eye_end.y) / (left_eye_end.x - right_eye_end.x));
+
+    cv::Point2f center = cv::Point(ornament.cols / 2, ornament.rows / 2);
+    cv::Mat rotateMatrix = cv::getRotationMatrix2D(center, angle * 180 / 3.14, 1.0);
+
+    cv::Mat rotated;
+    cv::warpAffine(
+        ornament, rotated, rotateMatrix, ornament.size(),
+        cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));
+
+    // paint
+    center = cv::Point((left_eye_end.x + right_eye_end.x) / 2, (left_eye_end.y + right_eye_end.y) / 2);
+    cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
+
+    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows) {
+        qWarning() << "Invalid painting rectangle!";
+        return;
+    }
+
+    frame(rec) &= rotated;
+}
+
+void CaptureThread::drawMustache(cv::Mat &frame, vector<cv::Point2f> &marks)
+{
+    // resize
+    cv::Mat ornament;
+    cv::Point2d left_mouth_corner = marks[54];
+    cv::Point2d right_mouth_corner = marks[48];
+    double distance = cv::norm(left_mouth_corner - right_mouth_corner) * 1.5;
+    cv::resize(mustache, ornament, cv::Size(0, 0), distance / mustache.cols, distance / mustache.cols, cv::INTER_NEAREST);
+
+    // rotate
+    double angle = -atan((left_mouth_corner.y - right_mouth_corner.y) / (left_mouth_corner.x - right_mouth_corner.x));
+    cv::Point2f center = cv::Point(ornament.cols / 2, ornament.rows / 2);
+    cv::Mat rotateMatrix = cv::getRotationMatrix2D(center, angle * 180 / 3.14, 1.0);
+
+    cv::Mat rotated;
+    cv::warpAffine(
+        ornament, rotated, rotateMatrix, ornament.size(),
+        cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));
+
+    // paint
+    cv::Point2f nose_bottom = marks[33];
+    cv::Point2f mouth_top = marks[51];
+    center = cv::Point((nose_bottom.x + mouth_top.x) / 2, (nose_bottom.y + mouth_top.y) / 2);
+    cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
+
+    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows) {
+        qWarning() << "Invalid painting rectangle!";
+        return;
+    }
+
+    frame(rec) &= rotated;
+}
+
+void CaptureThread::drawMouseNose(cv::Mat &frame, vector<cv::Point2f> &marks)
+{
+    // resize
+    cv::Mat ornament;
+    cv::Point2d left_ear_lobe = marks[13];
+    cv::Point2d right_ear_lobe = marks[3];
+    double distance = cv::norm(left_ear_lobe - right_ear_lobe);
+    cv::resize(mouse_nose, ornament, cv::Size(0, 0), distance / mouse_nose.cols, distance / mouse_nose.cols, cv::INTER_NEAREST);
+
+    // rotate
+    cv::Point2d left_ear_top = marks[16];
+    cv::Point2d right_ear_top = marks[0];
+    double angle = -atan((left_ear_top.y - right_ear_top.y) / (left_ear_top.x - right_ear_top.x));
+    cv::Point2f center = cv::Point(ornament.cols / 2, ornament.rows / 2);
+    cv::Mat rotateMatrix = cv::getRotationMatrix2D(center, angle * 180 / 3.14, 1.0);
+
+    cv::Mat rotated;
+    cv::warpAffine(
+        ornament, rotated, rotateMatrix, ornament.size(),
+        cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));
+
+    // paint
+    center = marks[30];
+    cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
+
+    if (rec.x < 0 || rec.y < 0 || (rec.x + rec.width) > frame.cols || (rec.y + rec.height) > frame.rows) {
+        qWarning() << "Invalid painting rectangle!";
+        return;
+    }
+
+    frame(rec) &= rotated;
 }

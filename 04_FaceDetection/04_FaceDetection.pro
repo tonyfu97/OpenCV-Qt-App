@@ -26,3 +26,5 @@ DEFINES += OPENCV_DATA_DIR=\\\"/opt/homebrew/share/opencv4/\\\"
 # Input
 HEADERS += mainwindow.h capture_thread.h utilities.h
 SOURCES += main.cpp mainwindow.cpp capture_thread.cpp utilities.cpp
+
+RESOURCES = images.qrc
