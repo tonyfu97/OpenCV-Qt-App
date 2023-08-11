@@ -35,4 +35,4 @@
 .qmake.stash
 
 # Data
-04_FaceDetection/models/*
+*/models/*
