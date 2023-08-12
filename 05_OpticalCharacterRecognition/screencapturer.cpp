@@ -8,18 +8,14 @@
 #include <QColor>
 #include <QRegion>
 #include <QShortcut>
+#include <QDebug>
 
 #include "screencapturer.h"
 
-ScreenCapturer::ScreenCapturer(MainWindow *w):
-    QWidget(nullptr), window(w)
+ScreenCapturer::ScreenCapturer(MainWindow *w) : QWidget(nullptr), window(w)
 {
     setWindowFlags(
-        Qt::BypassWindowManagerHint
-        | Qt::WindowStaysOnTopHint
-        | Qt::FramelessWindowHint
-        | Qt::Tool
-    );
+        Qt::BypassWindowManagerHint | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool);
 
     setAttribute(Qt::WA_DeleteOnClose);
     // setMouseTracking(true);
@@ -29,29 +25,35 @@ ScreenCapturer::ScreenCapturer(MainWindow *w):
     initShortcuts();
 }
 
-QPixmap ScreenCapturer::captureDesktop() {
+QPixmap ScreenCapturer::captureDesktop()
+{
     QRect geometry;
-    for (QScreen *const screen : QGuiApplication::screens()) {
+    for (QScreen *const screen : QGuiApplication::screens())
+    {
         geometry = geometry.united(screen->geometry());
     }
 
     QPixmap pixmap(QApplication::primaryScreen()->grabWindow(
-                  QApplication::desktop()->winId(),
-                  geometry.x(),
-                  geometry.y(),
-                  geometry.width(),
-                  geometry.height()
-        ));
-    pixmap.setDevicePixelRatio(QApplication::desktop()->devicePixelRatio());
+        QApplication::desktop()->winId(),
+        geometry.x(),
+        geometry.y(),
+        geometry.width(),
+        geometry.height()));
+
+    // pixmap.setDevicePixelRatio(QApplication::desktop()->devicePixelRatio());
+    // Doesn't seem to work.
+    
     return pixmap;
 }
 
-void ScreenCapturer::paintEvent(QPaintEvent*) {
+void ScreenCapturer::paintEvent(QPaintEvent *)
+{
     QPainter painter(this);
     painter.drawPixmap(0, 0, screen);
 
     QRegion grey(rect());
-    if(p1.x() != p2.x() && p1.y() != p2.y()) {
+    if (p1.x() != p2.x() && p1.y() != p2.y())
+    {
         painter.setPen(QColor(200, 100, 50, 255));
         painter.drawRect(QRect(p1, p2));
         grey = grey.subtracted(QRect(p1, p2));
@@ -72,7 +74,8 @@ void ScreenCapturer::mousePressEvent(QMouseEvent *event)
 
 void ScreenCapturer::mouseMoveEvent(QMouseEvent *event)
 {
-    if(!mouseDown) return;
+    if (!mouseDown)
+        return;
     p2 = event->pos();
     update();
 }
@@ -81,6 +84,7 @@ void ScreenCapturer::mouseReleaseEvent(QMouseEvent *event)
 {
     mouseDown = false;
     p2 = event->pos();
+
     update();
 }
 
@@ -93,12 +97,22 @@ void ScreenCapturer::closeMe()
 
 void ScreenCapturer::confirmCapture()
 {
-    QPixmap image = screen.copy(QRect(p1, p2));
+    double ratio = QApplication::desktop()->devicePixelRatio();
+    QRect selectedArea = QRect(p1 * ratio, p2 * ratio);
+
+    // qDebug() << QString("p1:") << p1 << QString("p2:") << p2;
+    // qDebug() << QString("selectedArea:") << selectedArea;
+    // qDebug() << QString("screen size:") << screen.size();
+    // qDebug() << QApplication::desktop()->devicePixelRatio();
+
+    QPixmap image = screen.copy(selectedArea);
+
     window->showImage(image);
     closeMe();
 }
 
-void ScreenCapturer::initShortcuts() {
+void ScreenCapturer::initShortcuts()
+{
     new QShortcut(Qt::Key_Escape, this, SLOT(closeMe()));
     new QShortcut(Qt::Key_Return, this, SLOT(confirmCapture()));
 }

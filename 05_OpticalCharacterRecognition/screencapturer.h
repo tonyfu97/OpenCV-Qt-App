@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include <QWidget>
 #include <QPixmap>
@@ -8,7 +8,8 @@
 
 #include "mainwindow.h"
 
-class ScreenCapturer : public QWidget {
+class ScreenCapturer : public QWidget
+{
     Q_OBJECT
 
 public:

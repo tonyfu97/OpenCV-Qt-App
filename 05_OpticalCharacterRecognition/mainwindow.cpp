@@ -244,29 +244,28 @@ void MainWindow::extractText()
         cv::Mat newImage = detectTextAreas(image, areas);
         showImage(newImage);
         editor->setPlainText("");
+
         for (cv::Rect &rect : areas)
         {
             tesseractAPI->SetRectangle(rect.x, rect.y, rect.width, rect.height);
             char *outText = tesseractAPI->GetUTF8Text();
+            // debug outText
+            qDebug() << outText;
             editor->setPlainText(editor->toPlainText() + outText);
             delete[] outText;
         }
     }
     else
     {
+        // Get the recognized text from the image
         char *outText = tesseractAPI->GetUTF8Text();
+
+        // Set the recognized text to the text editor
         editor->setPlainText(outText);
+
+        // Clean up the allocated text
         delete[] outText;
     }
-
-    // Get the recognized text from the image
-    char *outText = tesseractAPI->GetUTF8Text();
-
-    // Set the recognized text to the text editor
-    editor->setPlainText(outText);
-
-    // Clean up the allocated text
-    delete[] outText;
 
     // Restore the saved locale
     setlocale(LC_ALL, old_ctype);

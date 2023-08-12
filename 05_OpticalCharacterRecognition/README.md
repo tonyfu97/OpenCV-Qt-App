@@ -18,6 +18,40 @@
     ln -s /opt/homebrew/include/tesseract tesseract_nested/tesseract
     ```
 
+Certainly! Here's an improved version of the README:
+
+- **Addressing Screen Capture DPI Scaling**: My display's scaling is set to 200%, a fact that can be verified by the value `2` returned from the line `double ratio = QApplication::desktop()->devicePixelRatio();`. Despite this, the line of code `pixmap.setDevicePixelRatio(QApplication::desktop()->devicePixelRatio());` located in the `ScreenCapturer::captureDesktop()` function doesn't produce the expected results. The captured image appears to be 2x smaller than the actual screen size. The discrepancy is likely caused by the creation of the `QPixmap` object before the scaling is properly applied.
+
+    **Solution**: Modify the `ScreenCapturer::confirmCapture()` function as follows:
+
+    From:
+    ```cpp
+    void ScreenCapturer::confirmCapture()
+    {
+        QPixmap image = screen.copy(QRect(p1, p2));
+        window->showImage(image);
+        closeMe();
+    }
+    ```
+
+    To:
+    ```cpp
+    void ScreenCapturer::confirmCapture()
+    {
+        double ratio = QApplication::desktop()->devicePixelRatio();
+        QRect selectedArea = QRect(p1 * ratio, p2 * ratio);
+        QPixmap image = screen.copy(selectedArea);
+        window->showImage(image);
+        closeMe();
+    }
+    ```
+
+    This solution takes into account the display's DPI scaling, ensuring that the captured image matches the actual screen size by multiplying the coordinates `p1` and `p2` by the appropriate ratio.
+
+- **Screen Capture Only Displays Wallpaper**: When attempting to capture the screen, all folders and windows temporarily disappear, leaving only the wallpaper visible. This issue appears to be related to macOS security.
+
+    **Solution**: Currently under investigation.
+
 ### 2. Optical Character Recognition (OCR) with Tesseract
 
 - **Installation**: I opted to install Tesseract version 5.3.2_1 using Homebrew rather than building it manually. The command for installation is:
