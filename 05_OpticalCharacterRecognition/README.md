@@ -18,8 +18,6 @@
     ln -s /opt/homebrew/include/tesseract tesseract_nested/tesseract
     ```
 
-Certainly! Here's an improved version of the README:
-
 - **Addressing Screen Capture DPI Scaling**: My display's scaling is set to 200%, a fact that can be verified by the value `2` returned from the line `double ratio = QApplication::desktop()->devicePixelRatio();`. Despite this, the line of code `pixmap.setDevicePixelRatio(QApplication::desktop()->devicePixelRatio());` located in the `ScreenCapturer::captureDesktop()` function doesn't produce the expected results. The captured image appears to be 2x smaller than the actual screen size. The discrepancy is likely caused by the creation of the `QPixmap` object before the scaling is properly applied.
 
     **Solution**: Modify the `ScreenCapturer::confirmCapture()` function as follows:
