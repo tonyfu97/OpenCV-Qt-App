@@ -14,7 +14,7 @@ EQ            = =
 
 CC            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 CXX           = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
-DEFINES       = -DQT_NO_DEBUG -DQT_MULTIMEDIA_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
+DEFINES       = -DOPENCV_DATA_DIR=\"/opt/homebrew/share/opencv4/\" -DQT_NO_DEBUG -DQT_MULTIMEDIA_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -mmacosx-version-min=10.13 -Wall -Wextra -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -stdlib=libc++ -O2 -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -mmacosx-version-min=10.13 -Wall -Wextra -fPIC $(DEFINES)
 INCPATH       = -I. -I. -I/opt/homebrew/include/opencv4 -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtMultimedia.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtNetwork.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/AGL.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -F/opt/homebrew/Cellar/qt@5/5.15.10/lib
@@ -40,7 +40,7 @@ DISTNAME      = 06_ObjectDetection1.0.0
 DISTDIR = /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/06_ObjectDetection/.tmp/06_ObjectDetection1.0.0
 LINK          = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
 LFLAGS        = -stdlib=libc++ -headerpad_max_install_names $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -mmacosx-version-min=10.13 -Wl,-rpath,@executable_path/../Frameworks
-LIBS          = $(SUBLIBS) -F/opt/homebrew/Cellar/qt@5/5.15.10/lib -L/opt/homebrew/opt/opencv/lib -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lopencv_video -lopencv_videoio -framework QtMultimedia -framework QtWidgets -framework QtGui -framework AppKit -framework Metal -framework QtNetwork -framework QtCore -framework DiskArbitration -framework IOKit -framework OpenGL -framework AGL   
+LIBS          = $(SUBLIBS) -F/opt/homebrew/Cellar/qt@5/5.15.10/lib -L/opt/homebrew/opt/opencv/lib -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lopencv_video -lopencv_videoio -lopencv_objdetect -lopencv_dnn -framework QtMultimedia -framework QtWidgets -framework QtGui -framework AppKit -framework Metal -framework QtNetwork -framework QtCore -framework DiskArbitration -framework IOKit -framework OpenGL -framework AGL   
 AR            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq
 RANLIB        = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib -s
 SED           = sed
@@ -247,6 +247,7 @@ DIST          = /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_pre.prf 
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/qt_config.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang/qmake.conf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/exclusive_builds.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/mac/sdk.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/toolchain.prf \
@@ -288,7 +289,7 @@ TARGET        = 06_ObjectDetection.app/Contents/MacOS/06_ObjectDetection
 EXPORT_QMAKE_MAC_SDK = macosx
 EXPORT_QMAKE_MAC_SDK_VERSION = 13.3
 EXPORT_QMAKE_XCODE_DEVELOPER_PATH = /Applications/Xcode.app/Contents/Developer
-EXPORT__QMAKE_STASH_ = 
+EXPORT__QMAKE_STASH_ = /Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/06_ObjectDetection/.qmake.stash
 EXPORT_VALID_ARCHS = arm64
 EXPORT_DEFAULT_ARCHS = arm64
 EXPORT_ARCHS = $(filter $(EXPORT_VALID_ARCHS), $(if $(ARCHS), $(ARCHS), $(if $(EXPORT_DEFAULT_ARCHS), $(EXPORT_DEFAULT_ARCHS), $(EXPORT_VALID_ARCHS))))
@@ -488,6 +489,7 @@ Makefile: 06_ObjectDetection.pro /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/qt_config.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang/qmake.conf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/exclusive_builds.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/mac/sdk.prf \
 		/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/toolchain.prf \
@@ -706,6 +708,7 @@ Makefile: 06_ObjectDetection.pro /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/qt_config.prf:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang/qmake.conf:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/spec_post.prf:
+.qmake.stash:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/exclusive_builds.prf:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/mac/sdk.prf:
 /opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/features/toolchain.prf:
@@ -780,6 +783,7 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) -r 06_ObjectDetection.app
+	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 

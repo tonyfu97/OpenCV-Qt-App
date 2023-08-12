@@ -6,6 +6,7 @@
 
 #include "opencv2/opencv.hpp"
 #include "opencv2/videoio.hpp"
+#include "opencv2/objdetect.hpp"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ class CaptureThread : public QThread
 public:
     explicit CaptureThread(int camera, QMutex *lock);
     explicit CaptureThread(QString videoPath, QMutex *lock);
-    ~CaptureThread();
+    ~CaptureThread() = default;
     void setRunning(bool run) { running = run; };
     void takePhoto() { taking_photo = true; }
 
@@ -28,6 +29,7 @@ signals:
 
 private:
     void takePhoto(cv::Mat &frame);
+    void detectObjects(cv::Mat &frame);
 
 private:
     bool running;
@@ -40,4 +42,7 @@ private:
 
     // take photos
     bool taking_photo;
+
+    // object detection
+    cv::CascadeClassifier *classifier;
 };

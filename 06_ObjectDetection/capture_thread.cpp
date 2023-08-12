@@ -16,10 +16,6 @@ CaptureThread::CaptureThread(QString videoPath, QMutex *lock) : running(false), 
     taking_photo = false;
 }
 
-CaptureThread::~CaptureThread()
-{
-}
-
 void CaptureThread::run()
 {
     running = true;
@@ -29,6 +25,9 @@ void CaptureThread::run()
 
     frame_width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
     frame_height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+
+    // Cat face detection
+    classifier = new cv::CascadeClassifier(OPENCV_DATA_DIR "haarcascades/haarcascade_frontalcatface_extended.xml");
 
     while (running)
     {
@@ -43,6 +42,8 @@ void CaptureThread::run()
             takePhoto(tmp_frame);
         }
 
+        detectObjects(tmp_frame);
+
         cvtColor(tmp_frame, tmp_frame, cv::COLOR_BGR2RGB);
         data_lock->lock();
         frame = tmp_frame;
@@ -50,6 +51,8 @@ void CaptureThread::run()
         emit frameCaptured(&frame);
     }
     cap.release();
+    delete classifier;
+    classifier = nullptr;
     running = false;
 }
 
@@ -60,4 +63,18 @@ void CaptureThread::takePhoto(cv::Mat &frame)
     cv::imwrite(photo_path.toStdString(), frame);
     emit photoTaken(photo_name);
     taking_photo = false;
+}
+
+void CaptureThread::detectObjects(cv::Mat &frame)
+{
+    vector<cv::Rect> objects;
+    int minNeighbors = 5; // 3 for no-entry-sign; 5-for others.
+    classifier->detectMultiScale(frame, objects, 1.3, minNeighbors);
+
+    cv::Scalar color = cv::Scalar(0, 0, 255); // red
+
+    // draw the circumscribe rectangles
+    for(size_t i = 0; i < objects.size(); i++) {
+        cv::rectangle(frame, objects[i], color, 2);
+    }
 }
