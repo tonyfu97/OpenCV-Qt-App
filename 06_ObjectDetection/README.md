@@ -18,6 +18,34 @@
     <string>We need access to the camera to capture video for motion detection.</string>
     ```
 
+- **Failure to Build OpenCV 3.4.5**: This step builds the executables: `opencv_createsamples` and `opencv_traincascade`, which are needed to train the Haar Cascade classifier for no-entry sign detection. I first downloaded OpenCV 3.4.5 from this [link](https://github.com/opencv/opencv/releases/tag/3.4.5). 
+
+    Then, I created a `build` directory.
+
+    Inside the directory, I ran the following command:
+    ```bash
+    cmake -D CMAKE_BUILD_TYPE=RELEASE \
+          -D CMAKE_INSTALL_PREFIX=/Users/tonyfu/Desktop/OnlineCourses/OpenCV-Qt-App/06_ObjectDetection/opencv-3.4.5/build \
+          -D BUILD_opencv_apps=yes \
+          -D JPEG_INCLUDE_DIR=/opt/homebrew/include \
+          -D JPEG_LIBRARY=/path/to/jpeg/library \
+          ..
+    ```
+    Next, I ran `make` and got the error:
+    ```
+    [ 50%] Linking CXX shared library ../../lib/libopencv_imgcodecs.dylib
+    Undefined symbols for architecture arm64:
+    "_jpeg_default_qtables", referenced from:
+        cv::JpegEncoder::write(cv::Mat const&, std::__1::vector<int, std::__1::allocator<int> > const&) in grfmt_jpeg.cpp.o
+    ld: symbol(s) not found for architecture arm64
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    make[2]: *** [lib/libopencv_imgcodecs.3.4.5.dylib] Error 1
+    make[1]: *** [modules/imgcodecs/CMakeFiles/opencv_imgcodecs.dir/all] Error 2
+    make: *** [all] Error 2
+    ```
+
+    **Solution**: Currently under investigation.
+
 ### 2. Cat Detection with Haar Cascade:
 This is very similar to Face Detection in Chapter 4. The only difference is that we are using a different classifier.
 
