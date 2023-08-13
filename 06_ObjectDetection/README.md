@@ -18,7 +18,7 @@
     <string>We need access to the camera to capture video for motion detection.</string>
     ```
 
-- **Failure to Build OpenCV 3.4.5**: This step builds the executables: `opencv_createsamples` and `opencv_traincascade`, which are needed to train the Haar Cascade classifier for no-entry sign detection. I first downloaded OpenCV 3.4.5 from this [link](https://github.com/opencv/opencv/releases/tag/3.4.5). 
+- **Failure to Build OpenCV 3.4.5**: This step builds the executables: `opencv_createsamples` and `opencv_traincascade`, both are deprecated functions needed to train the Haar Cascade classifier for no-entry sign detection. I first downloaded OpenCV 3.4.5 from this [link](https://github.com/opencv/opencv/releases/tag/3.4.5). 
 
     Then, I created a `build` directory.
 
@@ -44,7 +44,20 @@
     make: *** [all] Error 2
     ```
 
-    **Solution**: Currently under investigation.
+    **Solution**: Currently under investigation. Maybe there are OpenCV 4 equivalents for the two executables.
+
+- **Undefined Template 'std::basic_ifstream<char>'**: This error occurs when compiling the `capture_thread.cpp` file. The error is as follows:
+  ```
+  capture_thread.cpp:121:18: error: implicit instantiation of undefined template 'std::basic_ifstream<char>'
+        ifstream ifs(namesFile.c_str());
+  ```
+
+  **Solution**: include the appropriate header file:
+  ```cpp
+  #include <fstream>
+  ```
+
+### 2. OpenCV 4.0.0 and Above
 
 ### 2. Cat Detection with Haar Cascade:
 This is very similar to Face Detection in Chapter 4. The only difference is that we are using a different classifier.
@@ -89,3 +102,92 @@ This is very similar to Face Detection in Chapter 4. The only difference is that
 ![cat_detection_example](images/cat_detection_example.png)
 
 
+### 3. OpenCV-Compatible Neural Network Extensions:
+OpenCV 4.0.0 and above supports the loading of neural network models from various frameworks. OpenCV cannot train its own DNN, but can load DNN from the following file extensions in inference mode:
+
+1. **Caffe**: `.prototxt`, `.caffemodel`
+2. **TensorFlow**: `.pb`, `.pbtxt`
+3. **Torch**: `.t7`, `.net`, TorchScript
+4. **Darknet (YOLO)**: `.cfg`, `.weights`
+5. **ONNX**: `.onnx`
+6. **DLA**: Custom format
+7. **OpenVINO**: `.xml`, `.bin`
+8. **Apache MXNet**: `.json`, `.params`
+9. **Apple Core ML**: `.mlmodel`
+10. **Chainer**: `npz`
+
+### 4. YOLOv3 Object Detection:
+
+This code block demonstrates how to use YOLOv3 (You Only Look Once version 3) for object detection using OpenCV.
+
+1. **Include OpenCV's Deep Neural Network (DNN) module**: This is required to work with neural networks, including YOLO.
+
+    ```cpp
+    #include "opencv2/dnn.hpp"
+    ```
+
+2. **Set Input Dimensions**: Define the width and height that the model expects for its input.
+
+    ```cpp
+    int inputWidth = 416;
+    int inputHeight = 416;
+    ```
+
+3. **Load the YOLO Model**: Provide the paths to the configuration and weights files.
+
+    ```cpp
+    string modelConfig = "data/yolov3.cfg";
+    string modelWeights = "data/yolov3.weights";
+    cv::dnn::Net net = cv::dnn::readNetFromDarknet(modelConfig, modelWeights);
+    ```
+
+4. **Load Class Names**: Read the class names from a file and store them in a vector. There are 80 categories available for detection. You can view them in the [coco.names](data/coco.names) file. `ifstream` stands for "input file," and an ifstream object is used to open and read from files.
+
+    ```cpp
+    #include <fstream>
+
+    vector<string> objectClasses;
+    string name;
+    string namesFile = "data/coco.names";
+    ifstream ifs(namesFile.c_str());
+    while(getline(ifs, name)) objectClasses.push_back(name);
+    ```
+
+5. **Preprocess the Image**: Convert the image to a blob (binary large object), a format required for feeding into the neural network.
+
+    ```cpp
+    cv::Mat blob;
+    cv::dnn::blobFromImage(frame, blob, 1 / 255.0, cv::Size(inputWidth, inputHeight), cv::Scalar(0, 0, 0), true, false);
+    net.setInput(blob);
+    ```
+
+6. **Run Forward Pass**: Pass the blob through the network to get the detection results.
+
+    ```cpp
+    vector<cv::Mat> outs;
+    net.forward(outs, getOutputsNames(net));
+    ```
+
+7. **Decode Outputs**: Process the network's output to extract the detected objects' information.
+
+    ```cpp
+    vector<int> outClassIds;
+    vector<float> outConfidences;
+    vector<cv::Rect> outBoxes;
+    decodeOutLayers(frame, outs, outClassIds, outConfidences, outBoxes);
+    ```
+
+8. **Draw Bounding Boxes and Labels**: Iterate through the detected objects, draw bounding boxes around them, and display the class name and confidence level.
+
+    ```cpp
+    for(size_t i = 0; i < outClassIds.size(); i ++) {
+        // drawing and labeling code here
+    }
+    ```
+
+**Results**:
+
+![yolo_example](images/yolo_example.png)
+
+Detecting time on a single frame:  101-110 ms
+YOLO: Inference time on a single frame:  98-105 ms

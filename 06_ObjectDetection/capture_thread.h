@@ -7,6 +7,7 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/videoio.hpp"
 #include "opencv2/objdetect.hpp"
+#include "opencv2/dnn.hpp"
 
 using namespace std;
 
@@ -30,6 +31,7 @@ signals:
 private:
     void takePhoto(cv::Mat &frame);
     void detectObjects(cv::Mat &frame);
+    void detectObjectsDNN(cv::Mat &frame);
 
 private:
     bool running;
@@ -45,4 +47,7 @@ private:
 
     // object detection
     cv::CascadeClassifier *classifier;
+
+    cv::dnn::Net net;
+    vector<string> objectClasses;
 };

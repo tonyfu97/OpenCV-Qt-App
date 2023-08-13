@@ -14,7 +14,7 @@ EQ            = =
 
 CC            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 CXX           = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
-DEFINES       = -DOPENCV_DATA_DIR=\"/opt/homebrew/share/opencv4/\" -DQT_NO_DEBUG -DQT_MULTIMEDIA_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
+DEFINES       = -DOPENCV_DATA_DIR=\"/opt/homebrew/share/opencv4/\" -DTIME_MEASURE=1 -DQT_NO_DEBUG -DQT_MULTIMEDIA_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -mmacosx-version-min=10.13 -Wall -Wextra -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -stdlib=libc++ -O2 -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk -mmacosx-version-min=10.13 -Wall -Wextra -fPIC $(DEFINES)
 INCPATH       = -I. -I. -I/opt/homebrew/include/opencv4 -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtMultimedia.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtGui.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtNetwork.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/AGL.framework/Headers -I/opt/homebrew/Cellar/qt@5/5.15.10/mkspecs/macx-clang -F/opt/homebrew/Cellar/qt@5/5.15.10/lib
@@ -1098,6 +1098,8 @@ capture_thread.o: capture_thread.cpp /opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCor
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qdatetime.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QDebug \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qdebug.h \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/QApplication \
+		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtWidgets.framework/Headers/qapplication.h \
 		utilities.h \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/QString \
 		/opt/homebrew/Cellar/qt@5/5.15.10/lib/QtCore.framework/Headers/qstring.h \
