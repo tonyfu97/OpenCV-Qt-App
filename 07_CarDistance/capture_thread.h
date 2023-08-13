@@ -21,6 +21,9 @@ public:
     void setRunning(bool run) { running = run; };
     void takePhoto() { taking_photo = true; }
 
+    enum ViewMode { BIRDEYE, EYELEVEL, };
+    void setViewMode(ViewMode m) {viewMode = m; };
+
 protected:
     void run() override;
 
@@ -46,4 +49,6 @@ private:
 
     cv::dnn::Net net;
     vector<string> objectClasses;
+
+    ViewMode viewMode;
 };

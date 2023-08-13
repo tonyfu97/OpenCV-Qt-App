@@ -7,6 +7,8 @@
 #include "utilities.h"
 #include "capture_thread.h"
 
+const int CAR_IDX = 2;
+
 CaptureThread::CaptureThread(int camera, QMutex *lock) : running(false), cameraID(camera), videoPath(""), data_lock(lock)
 {
     frame_width = frame_height = 0;
@@ -65,9 +67,9 @@ void CaptureThread::takePhoto(cv::Mat &frame)
 
 static void decodeOutLayers(
     cv::Mat &frame, const vector<cv::Mat> &outs,
-    vector<int> &outClassIds,
-    vector<float> &outConfidences,
     vector<cv::Rect> &outBoxes);
+void distanceBirdEye(cv::Mat &frame, vector<cv::Rect> &cars);
+void distanceEyeLevel(cv::Mat &frame, vector<cv::Rect> &cars);
 
 void CaptureThread::detectObjectsDNN(cv::Mat &frame)
 {
@@ -102,39 +104,31 @@ void CaptureThread::detectObjectsDNN(cv::Mat &frame)
     net.forward(outs, net.getUnconnectedOutLayersNames());
 
     // remove the bounding boxes with low confidence
-    vector<int> outClassIds;
-    vector<float> outConfidences;
     vector<cv::Rect> outBoxes;
-    decodeOutLayers(frame, outs, outClassIds, outConfidences, outBoxes);
+    decodeOutLayers(frame, outs, outBoxes);
 
-    for (size_t i = 0; i < outClassIds.size(); i++)
+    for (size_t i = 0; i < outBoxes.size(); i++)
     {
         cv::rectangle(frame, outBoxes[i], cv::Scalar(0, 0, 255));
-
-        // get the label for the class name and its confidence
-        string label = objectClasses[outClassIds[i]];
-        label += cv::format(":%.2f", outConfidences[i]);
-
-        // display the label at the top of the bounding box
-        int baseLine;
-        cv::Size labelSize = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-        int left = outBoxes[i].x, top = outBoxes[i].y;
-        top = max(top, labelSize.height);
-        cv::putText(frame, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
+    }
+    if (viewMode == BIRDEYE)
+    {
+        distanceBirdEye(frame, outBoxes);
+    }
+    else
+    {
+        distanceEyeLevel(frame, outBoxes);
     }
 }
 
 // Decode the output layers and apply confidence thresholding and non-maximum suppression
 void decodeOutLayers(
     cv::Mat &frame, const vector<cv::Mat> &outs,
-    vector<int> &outClassIds,
-    vector<float> &outConfidences,
     vector<cv::Rect> &outBoxes)
 {
-    float confThreshold = 0.5; // confidence threshold for filtering weak detections
-    float nmsThreshold = 0.4;  // non-maximum suppression threshold to eliminate redundant boxes
+    float confThreshold = 0.65; // confidence threshold
+    float nmsThreshold = 0.4;   // non-maximum suppression threshold
 
-    vector<int> classIds;
     vector<float> confidences;
     vector<cv::Rect> boxes;
 
@@ -149,9 +143,10 @@ void decodeOutLayers(
             double confidence;
             // Get the value and location of the maximum score among object classes
             cv::minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
-            if (confidence > confThreshold) // Apply confidence thresholding
+            if (classIdPoint.x != CAR_IDX) // not a car!
+                continue;
+            if (confidence > confThreshold)
             {
-                // Convert detected bounding box to frame coordinates
                 int centerX = (int)(data[0] * frame.cols);
                 int centerY = (int)(data[1] * frame.rows);
                 int width = (int)(data[2] * frame.cols);
@@ -159,8 +154,6 @@ void decodeOutLayers(
                 int left = centerX - width / 2;
                 int top = centerY - height / 2;
 
-                // Store the result
-                classIds.push_back(classIdPoint.x);
                 confidences.push_back((float)confidence);
                 boxes.push_back(cv::Rect(left, top, width, height));
             }
@@ -173,8 +166,106 @@ void decodeOutLayers(
     for (size_t i = 0; i < indices.size(); ++i)
     {
         int idx = indices[i];
-        outClassIds.push_back(classIds[idx]);
         outBoxes.push_back(boxes[idx]);
-        outConfidences.push_back(confidences[idx]);
     }
+}
+
+void distanceBirdEye(cv::Mat &frame, vector<cv::Rect> &cars)
+{
+    if (cars.empty())
+        return;
+
+    // Put cars into vectors of length and end points
+    vector<int> length_of_cars;
+    vector<pair<int, int>> endpoints;
+    for (auto car : cars)
+    {
+        length_of_cars.push_back(car.width);
+        endpoints.push_back(make_pair(car.x, 1));
+        endpoints.push_back(make_pair(car.x + car.width, -1));
+    }
+
+    // Find median length of cars
+    sort(length_of_cars.begin(), length_of_cars.end());
+    int length = length_of_cars[cars.size() / 2];
+
+    // Sort end points from left to right.
+    sort(
+        endpoints.begin(), endpoints.end(),
+        [](pair<int, int> a, pair<int, int> b)
+        {
+            return a.first < b.first;
+        });
+
+    // Algorithm to merge horizontally overlapped cars
+    vector<pair<int, int>> cars_merged;
+    int flag = 0, start = 0;
+    for (auto ep : endpoints)
+    {
+        flag += ep.second;
+        if (flag == 1 && start == 0)
+        { // a start
+            start = ep.first;
+        }
+        else if (flag == 0)
+        { // an end
+            cars_merged.push_back(make_pair(start, ep.first));
+            start = 0;
+        }
+    }
+
+    // Draw spacing lines
+    for (size_t i = 1; i < cars_merged.size(); i++)
+    {
+        int x1 = cars_merged[i - 1].second; // head of car, start of spacing
+        int x2 = cars_merged[i].first;      // end of another car, end of spacing
+        cv::line(frame, cv::Point(x1, 0), cv::Point(x1, frame.rows), cv::Scalar(0, 255, 0), 2);
+        cv::line(frame, cv::Point(x2, 0), cv::Point(x2, frame.rows), cv::Scalar(0, 0, 255), 2);
+        float distance = (x2 - x1) * (5.0 / length);
+
+        // display the label at the top of the bounding box
+        string label = cv::format("%.2f m", distance);
+        int baseLine;
+        cv::Size labelSize = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+        int label_x = (x1 + x2) / 2 - (labelSize.width / 2);
+        cv::putText(frame, label, cv::Point(label_x, 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255));
+    }
+}
+
+void distanceEyeLevel(cv::Mat &frame, vector<cv::Rect> &cars)
+{
+    const float d0 = 1000.0f; // cm
+    const float w0 = 150.0f;  // px
+
+    // find the target car: the most middle and biggest one
+    vector<cv::Rect> cars_in_middle;
+    vector<int> cars_area;
+    size_t target_idx = 0;
+
+    for (auto car : cars)
+    {
+        if (car.x < frame.cols / 2 && (car.x + car.width) > frame.cols / 2)
+        {
+            cars_in_middle.push_back(car);
+            int area = car.width * car.height;
+            cars_area.push_back(area);
+            if (area > cars_area[target_idx])
+            {
+                target_idx = cars_area.size() - 1;
+            }
+        }
+    }
+
+    if (cars_in_middle.size() <= target_idx)
+        return;
+
+    cv::Rect car = cars_in_middle[target_idx];
+    float distance = (w0 / car.width) * d0; // (w0 / w1) * d0
+    // display the label at the top-left corner of the bounding box
+    string label = cv::format("%.2f m", distance / 100);
+    int baseLine;
+    cv::Size labelSize = cv::getTextSize(
+        label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+    cv::putText(frame, label, cv::Point(car.x, car.y + labelSize.height),
+                cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 255));
 }

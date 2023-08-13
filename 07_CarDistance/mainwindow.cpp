@@ -15,10 +15,7 @@
 #include "mainwindow.h"
 #include "utilities.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent)
-    , fileMenu(nullptr)
-    , capturer(nullptr)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), fileMenu(nullptr), capturer(nullptr)
 {
     initUI();
     data_lock = new QMutex();
@@ -33,6 +30,7 @@ void MainWindow::initUI()
     this->resize(1000, 800);
     // setup menubar
     fileMenu = menuBar()->addMenu("&File");
+    viewMenu = menuBar()->addMenu("&View");
 
     // main area
     QGridLayout *main_layout = new QGridLayout();
@@ -84,10 +82,22 @@ void MainWindow::createActions()
     exitAction = new QAction("E&xit", this);
     fileMenu->addAction(exitAction);
 
+    birdEyeAction = new QAction("Bird Eye View");
+    birdEyeAction->setCheckable(true);
+    viewMenu->addAction(birdEyeAction);
+    eyeLevelAction = new QAction("Eye Level View");
+    eyeLevelAction->setCheckable(true);
+    viewMenu->addAction(eyeLevelAction);
+
+    birdEyeAction->setChecked(true);
+
     // connect the signals and slots
     connect(exitAction, SIGNAL(triggered(bool)), QApplication::instance(), SLOT(quit()));
     connect(cameraInfoAction, SIGNAL(triggered(bool)), this, SLOT(showCameraInfo()));
     connect(openCameraAction, SIGNAL(triggered(bool)), this, SLOT(openCamera()));
+
+    connect(birdEyeAction, SIGNAL(triggered(bool)), this, SLOT(changeViewMode()));
+    connect(eyeLevelAction, SIGNAL(triggered(bool)), this, SLOT(changeViewMode()));
 }
 
 void MainWindow::showCameraInfo()
@@ -101,17 +111,17 @@ void MainWindow::showCameraInfo()
     QMessageBox::information(this, "Cameras", info);
 }
 
-
 void MainWindow::openCamera()
 {
-    if(capturer != nullptr) {
+    if (capturer != nullptr)
+    {
         // if a thread is already running, stop it
         capturer->setRunning(false);
         disconnect(capturer, &CaptureThread::frameCaptured, this, &MainWindow::updateFrame);
         disconnect(capturer, &CaptureThread::photoTaken, this, &MainWindow::appendSavedPhoto);
         connect(capturer, &CaptureThread::finished, capturer, &CaptureThread::deleteLater);
     }
-    
+
     int camID = 0;
     capturer = new CaptureThread(camID, data_lock);
     connect(capturer, &CaptureThread::frameCaptured, this, &MainWindow::updateFrame);
@@ -119,7 +129,6 @@ void MainWindow::openCamera()
     capturer->start();
     mainStatusLabel->setText(QString("Capturing Camera %1").arg(camID));
 }
-
 
 void MainWindow::updateFrame(cv::Mat *mat)
 {
@@ -142,14 +151,13 @@ void MainWindow::updateFrame(cv::Mat *mat)
     imageView->setSceneRect(image.rect());
 }
 
-
 void MainWindow::takePhoto()
 {
-    if(capturer != nullptr) {
+    if (capturer != nullptr)
+    {
         capturer->takePhoto();
     }
 }
-
 
 void MainWindow::populateSavedList()
 {
@@ -159,7 +167,8 @@ void MainWindow::populateSavedList()
     QFileInfoList files = dir.entryInfoList(
         nameFilters, QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
 
-    foreach(QFileInfo photo, files) {
+    foreach (QFileInfo photo, files)
+    {
         QString name = photo.baseName();
         QStandardItem *item = new QStandardItem();
         list_model->appendRow(item);
@@ -178,4 +187,26 @@ void MainWindow::appendSavedPhoto(QString name)
     list_model->setData(index, QPixmap(photo_path).scaledToHeight(145), Qt::DecorationRole);
     list_model->setData(index, name, Qt::DisplayRole);
     saved_list->scrollTo(index);
+}
+
+void MainWindow::changeViewMode()
+{
+    CaptureThread::ViewMode mode = CaptureThread::BIRDEYE;
+    QAction *active_action = qobject_cast<QAction *>(sender());
+    if (active_action == birdEyeAction)
+    {
+        birdEyeAction->setChecked(true);
+        eyeLevelAction->setChecked(false);
+        mode = CaptureThread::BIRDEYE;
+    }
+    else if (active_action == eyeLevelAction)
+    {
+        eyeLevelAction->setChecked(true);
+        birdEyeAction->setChecked(false);
+        mode = CaptureThread::EYELEVEL;
+    }
+    if (capturer != nullptr)
+    {
+        capturer->setViewMode(mode);
+    }
 }
