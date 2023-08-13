@@ -36,3 +36,7 @@
 
 # Data
 */models/*
+*/data/*
+
+# OpenCV 3
+06_ObjectDetection/opencv-3.4.5/*
